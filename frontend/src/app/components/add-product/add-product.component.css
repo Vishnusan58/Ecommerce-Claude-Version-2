@@ -1,0 +1,44 @@
+.add-product-card {
+  margin-bottom: 24px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.checkbox-field {
+  padding: 16px 0;
+}
+
+.checkbox-content {
+  margin-left: 8px;
+}
+
+.checkbox-content strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.checkbox-content p {
+  margin: 0;
+  color: #666;
+  font-size: 0.85rem;
+  font-weight: normal;
+}
+
+.form-actions {
+  margin-top: 24px;
+  text-align: right;
+}
+
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,248 @@
+<div class="checkout-container">
+  <h1>Checkout</h1>
+
+  @if (isLoading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (!isLoading && cart) {
+    <div class="checkout-layout">
+      <div class="checkout-form">
+        <mat-stepper linear #stepper>
+          <!-- Step 1: Address -->
+          <mat-step [stepControl]="addressForm" label="Delivery Address">
+            <form [formGroup]="addressForm">
+              <div class="form-grid">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Full Name</mat-label>
+                  <input matInput formControlName="fullName">
+                  <mat-error>Full name is required</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Phone Number</mat-label>
+                  <input matInput formControlName="phone" placeholder="10 digits">
+                  <mat-error>Enter valid 10-digit phone number</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Street Address</mat-label>
+                  <input matInput formControlName="street">
+                  <mat-error>Street address is required</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>City</mat-label>
+                  <input matInput formControlName="city">
+                  <mat-error>City is required</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>State</mat-label>
+                  <input matInput formControlName="state">
+                  <mat-error>State is required</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>PIN Code</mat-label>
+                  <input matInput formControlName="zipCode" placeholder="6 digits">
+                  <mat-error>Enter valid 6-digit PIN code</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Country</mat-label>
+                  <input matInput formControlName="country">
+                  <mat-error>Country is required</mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="step-actions">
+                <button mat-raised-button color="primary" matStepperNext [disabled]="addressForm.invalid">
+                  Continue to Payment
+                </button>
+              </div>
+            </form>
+          </mat-step>
+
+          <!-- Step 2: Payment -->
+          <mat-step [stepControl]="paymentForm" label="Payment Method">
+            <form [formGroup]="paymentForm">
+              <mat-radio-group formControlName="paymentMethod" class="payment-options" (change)="onPaymentMethodChange()">
+                <mat-radio-button value="COD" class="payment-option">
+                  <mat-icon>local_shipping</mat-icon>
+                  <div>
+                    <strong>Cash on Delivery</strong>
+                    <p>Pay when you receive</p>
+                  </div>
+                </mat-radio-button>
+
+                <mat-radio-button value="UPI" class="payment-option">
+                  <mat-icon>qr_code</mat-icon>
+                  <div>
+                    <strong>UPI</strong>
+                    <p>Pay via UPI ID</p>
+                  </div>
+                </mat-radio-button>
+
+                <mat-radio-button value="CARD" class="payment-option">
+                  <mat-icon>credit_card</mat-icon>
+                  <div>
+                    <strong>Credit/Debit Card</strong>
+                    <p>Visa, Mastercard, etc.</p>
+                  </div>
+                </mat-radio-button>
+              </mat-radio-group>
+
+              @if (paymentForm.get('paymentMethod')?.value === 'UPI') {
+                <mat-form-field appearance="outline" class="full-width mt-2">
+                  <mat-label>UPI ID</mat-label>
+                  <input matInput formControlName="upiId" placeholder="yourname@upi">
+                  <mat-error>Enter valid UPI ID</mat-error>
+                </mat-form-field>
+              }
+
+              @if (paymentForm.get('paymentMethod')?.value === 'CARD') {
+                <div class="card-form mt-2">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Card Number</mat-label>
+                    <input matInput formControlName="cardNumber" placeholder="1234 5678 9012 3456">
+                    <mat-error>Enter valid 16-digit card number</mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Expiry Date</mat-label>
+                    <input matInput formControlName="cardExpiry" placeholder="MM/YY">
+                    <mat-error>Enter valid expiry date</mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>CVV</mat-label>
+                    <input matInput formControlName="cardCvv" type="password" placeholder="123">
+                    <mat-error>Enter valid CVV</mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Card Holder Name</mat-label>
+                    <input matInput formControlName="cardHolder">
+                    <mat-error>Card holder name is required</mat-error>
+                  </mat-form-field>
+                </div>
+              }
+
+              <div class="step-actions">
+                <button mat-stroked-button matStepperPrevious>Back</button>
+                <button mat-raised-button color="primary" matStepperNext [disabled]="paymentForm.invalid">
+                  Review Order
+                </button>
+              </div>
+            </form>
+          </mat-step>
+
+          <!-- Step 3: Review -->
+          <mat-step label="Review Order">
+            <div class="review-section">
+              <h3>Delivery Address</h3>
+              <p>
+                {{ addressForm.get('fullName')?.value }}<br>
+                {{ addressForm.get('street')?.value }}<br>
+                {{ addressForm.get('city')?.value }}, {{ addressForm.get('state')?.value }} - {{ addressForm.get('zipCode')?.value }}<br>
+                Phone: {{ addressForm.get('phone')?.value }}
+              </p>
+
+              <mat-divider></mat-divider>
+
+              <h3>Payment Method</h3>
+              <p>
+                @switch (paymentForm.get('paymentMethod')?.value) {
+                  @case ('COD') { Cash on Delivery }
+                  @case ('UPI') { UPI: {{ paymentForm.get('upiId')?.value }} }
+                  @case ('CARD') { Card ending in {{ paymentForm.get('cardNumber')?.value?.slice(-4) }} }
+                }
+              </p>
+
+              <mat-divider></mat-divider>
+
+              <h3>Order Items</h3>
+              @for (item of cart.items; track item.id) {
+                <div class="review-item">
+                  <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                  <span>₹{{ item.subtotal | number }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="step-actions">
+              <button mat-stroked-button matStepperPrevious>Back</button>
+              <button mat-raised-button color="primary" (click)="placeOrder()" [disabled]="isPlacingOrder">
+                @if (isPlacingOrder) {
+                  <mat-spinner diameter="20"></mat-spinner>
+                } @else {
+                  Place Order - ₹{{ cart.total | number }}
+                }
+              </button>
+            </div>
+          </mat-step>
+        </mat-stepper>
+      </div>
+
+      <!-- Order Summary Sidebar -->
+      <mat-card class="order-summary">
+        <mat-card-header>
+          <mat-card-title>Order Summary</mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="summary-items">
+            @for (item of cart.items; track item.id) {
+              <div class="summary-item">
+                <img [src]="item.product.imageUrl" [alt]="item.product.name">
+                <div>
+                  <p class="item-name">{{ item.product.name }}</p>
+                  <p class="item-qty">Qty: {{ item.quantity }}</p>
+                </div>
+                <span class="item-price">₹{{ item.subtotal | number }}</span>
+              </div>
+            }
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>₹{{ cart.subtotal | number }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Tax</span>
+            <span>₹{{ cart.tax | number }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Delivery</span>
+            <span>{{ cart.deliveryFee === 0 ? 'FREE' : '₹' + (cart.deliveryFee | number) }}</span>
+          </div>
+          @if (cart.discount > 0) {
+            <div class="summary-row discount">
+              <span>Discount</span>
+              <span>-₹{{ cart.discount | number }}</span>
+            </div>
+          }
+
+          <mat-divider></mat-divider>
+
+          <div class="summary-row total">
+            <span>Total</span>
+            <span>₹{{ cart.total | number }}</span>
+          </div>
+
+          @if (isPremium) {
+            <div class="premium-badge">
+              <mat-icon>star</mat-icon>
+              Premium Benefits Applied
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+</div>

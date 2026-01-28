@@ -1,0 +1,150 @@
+<div class="container">
+  <h1>Shopping Cart</h1>
+
+  @if (isLoading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (!isLoading && (!cart || cart.items.length === 0)) {
+    <div class="empty-state">
+      <mat-icon>shopping_cart</mat-icon>
+      <h2>Your cart is empty</h2>
+      <p>Add some products to get started!</p>
+      <button mat-raised-button color="primary" routerLink="/products">
+        Continue Shopping
+      </button>
+    </div>
+  }
+
+  @if (!isLoading && cart && cart.items.length > 0) {
+    <div class="cart-layout">
+      <!-- Cart Items -->
+      <div class="cart-items">
+        @for (item of cart.items; track item.id) {
+          <mat-card class="cart-item">
+            <div class="item-image" (click)="viewProduct(item.product.id)">
+              <img [src]="item.product.imageUrl" [alt]="item.product.name">
+            </div>
+
+            <div class="item-details">
+              <h3 (click)="viewProduct(item.product.id)">{{ item.product.name }}</h3>
+              <p class="item-brand">{{ item.product.brand }}</p>
+              <p class="item-price">₹{{ item.product.price | number }} each</p>
+              @if (item.product.stock < 10) {
+                <p class="low-stock">Only {{ item.product.stock }} left in stock</p>
+              }
+            </div>
+
+            <div class="item-quantity">
+              <button mat-icon-button (click)="updateQuantity(item, item.quantity - 1)" [disabled]="item.quantity <= 1">
+                <mat-icon>remove</mat-icon>
+              </button>
+              <span class="quantity">{{ item.quantity }}</span>
+              <button mat-icon-button (click)="updateQuantity(item, item.quantity + 1)" [disabled]="item.quantity >= item.product.stock">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+
+            <div class="item-subtotal">
+              <span class="subtotal-label">Subtotal</span>
+              <span class="subtotal-value">₹{{ item.subtotal | number }}</span>
+            </div>
+
+            <button mat-icon-button color="warn" (click)="removeItem(item)" class="remove-btn">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-card>
+        }
+      </div>
+
+      <!-- Order Summary -->
+      <mat-card class="order-summary">
+        <mat-card-header>
+          <mat-card-title>Order Summary</mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="summary-row">
+            <span>Subtotal ({{ cart.items.length }} items)</span>
+            <span>₹{{ cart.subtotal | number }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Tax</span>
+            <span>₹{{ cart.tax | number }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Delivery Fee</span>
+            <span>
+              @if (cart.deliveryFee === 0) {
+                <span class="free-delivery">FREE</span>
+              } @else {
+                ₹{{ cart.deliveryFee | number }}
+              }
+            </span>
+          </div>
+
+          @if (cart.discount > 0) {
+            <div class="summary-row discount">
+              <span>Discount</span>
+              <span>-₹{{ cart.discount | number }}</span>
+            </div>
+          }
+
+          <mat-divider></mat-divider>
+
+          <div class="summary-row total">
+            <span>Total</span>
+            <span>₹{{ cart.total | number }}</span>
+          </div>
+
+          @if (isPremium) {
+            <div class="premium-benefits">
+              <mat-icon>star</mat-icon>
+              <span>Premium member: Free delivery applied!</span>
+            </div>
+          }
+
+          <!-- Coupon Section -->
+          <div class="coupon-section">
+            @if (cart.appliedCoupon) {
+              <div class="applied-coupon">
+                <span>
+                  <mat-icon>local_offer</mat-icon>
+                  {{ cart.appliedCoupon }}
+                </span>
+                <button mat-icon-button (click)="removeCoupon()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            } @else {
+              <mat-form-field appearance="outline" class="coupon-field">
+                <mat-label>Coupon Code</mat-label>
+                <input matInput [(ngModel)]="couponCode" placeholder="Enter code">
+                <button mat-icon-button matSuffix (click)="applyCoupon()" [disabled]="isApplyingCoupon">
+                  @if (isApplyingCoupon) {
+                    <mat-spinner diameter="20"></mat-spinner>
+                  } @else {
+                    <mat-icon>check</mat-icon>
+                  }
+                </button>
+              </mat-form-field>
+            }
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button mat-raised-button color="primary" class="full-width checkout-btn" (click)="proceedToCheckout()">
+            Proceed to Checkout
+          </button>
+          <button mat-stroked-button class="full-width" routerLink="/products">
+            Continue Shopping
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  }
+</div>

@@ -1,0 +1,168 @@
+<div class="container">
+  <h1>Seller Dashboard</h1>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    @if (isLoadingStats) {
+      <mat-card class="stat-card">
+        <mat-spinner diameter="30"></mat-spinner>
+      </mat-card>
+    } @else if (stats) {
+      <mat-card class="stat-card">
+        <mat-icon>attach_money</mat-icon>
+        <div class="stat-content">
+          <span class="stat-value">₹{{ stats.totalRevenue | number }}</span>
+          <span class="stat-label">Total Revenue</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-icon>shopping_bag</mat-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.totalOrders }}</span>
+          <span class="stat-label">Total Orders</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-icon>inventory_2</mat-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.totalProducts }}</span>
+          <span class="stat-label">Products</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card warning">
+        <mat-icon>pending_actions</mat-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.pendingOrders }}</span>
+          <span class="stat-label">Pending Orders</span>
+        </div>
+      </mat-card>
+    }
+  </div>
+
+  <!-- Tabs -->
+  <mat-tab-group>
+    <!-- Products Tab -->
+    <mat-tab label="My Products">
+      <div class="tab-content">
+        <div class="tab-header">
+          <h2>Products ({{ productsTotalElements }})</h2>
+          <button mat-raised-button color="primary" (click)="toggleAddProduct()">
+            <mat-icon>{{ showAddProduct ? 'close' : 'add' }}</mat-icon>
+            {{ showAddProduct ? 'Cancel' : 'Add Product' }}
+          </button>
+        </div>
+
+        @if (showAddProduct) {
+          <app-add-product (productAdded)="onProductAdded()"></app-add-product>
+        }
+
+        @if (isLoadingProducts) {
+          <div class="loading-container">
+            <mat-spinner></mat-spinner>
+          </div>
+        } @else {
+          <div class="products-table">
+            @for (product of products; track product.id) {
+              <mat-card class="product-row">
+                <img [src]="product.imageUrl" [alt]="product.name">
+                <div class="product-info">
+                  <h4>{{ product.name }}</h4>
+                  <p>{{ product.category.name }} | {{ product.brand }}</p>
+                </div>
+                <div class="product-price">
+                  <span class="price">₹{{ product.price | number }}</span>
+                  <span class="stock" [class.low]="product.stock < 10">
+                    {{ product.stock }} in stock
+                  </span>
+                </div>
+                <div class="product-actions">
+                  @if (product.premiumEarlyAccess) {
+                    <mat-chip color="primary" selected>Premium</mat-chip>
+                  }
+                  <button mat-icon-button color="warn" (click)="deleteProduct(product)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </mat-card>
+            }
+          </div>
+
+          <mat-paginator
+            [length]="productsTotalElements"
+            [pageSize]="productsPageSize"
+            [pageIndex]="productsPageIndex"
+            [pageSizeOptions]="[5, 10, 25]"
+            (page)="onProductsPageChange($event)">
+          </mat-paginator>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- Orders Tab -->
+    <mat-tab label="Orders">
+      <div class="tab-content">
+        <div class="tab-header">
+          <h2>Orders ({{ ordersTotalElements }})</h2>
+          <mat-form-field appearance="outline">
+            <mat-label>Filter by Status</mat-label>
+            <mat-select [(ngModel)]="selectedOrderStatus" (selectionChange)="onOrderStatusFilterChange()">
+              <mat-option value="">All Orders</mat-option>
+              @for (status of orderStatuses; track status) {
+                <mat-option [value]="status">{{ status }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        @if (isLoadingOrders) {
+          <div class="loading-container">
+            <mat-spinner></mat-spinner>
+          </div>
+        } @else {
+          <div class="orders-table">
+            @for (order of orders; track order.id) {
+              <mat-card class="order-row" (click)="viewOrder(order.id)">
+                <div class="order-info">
+                  <span class="order-number">#{{ order.orderNumber }}</span>
+                  <span class="order-date">{{ order.createdAt | date:'short' }}</span>
+                </div>
+                <div class="order-items">
+                  {{ order.items.length }} item(s)
+                  @if (order.isPremiumOrder) {
+                    <mat-chip class="premium-chip">
+                      <mat-icon>star</mat-icon>
+                      Premium
+                    </mat-chip>
+                  }
+                </div>
+                <div class="order-total">
+                  ₹{{ order.total | number }}
+                </div>
+                <div class="order-status" (click)="$event.stopPropagation()">
+                  <mat-form-field appearance="outline">
+                    <mat-select [value]="order.status" (selectionChange)="updateOrderStatus(order, $event.value)">
+                      @for (status of orderStatuses; track status) {
+                        <mat-option [value]="status">{{ status }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </mat-card>
+            }
+          </div>
+
+          <mat-paginator
+            [length]="ordersTotalElements"
+            [pageSize]="ordersPageSize"
+            [pageIndex]="ordersPageIndex"
+            [pageSizeOptions]="[5, 10, 25]"
+            (page)="onOrdersPageChange($event)">
+          </mat-paginator>
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

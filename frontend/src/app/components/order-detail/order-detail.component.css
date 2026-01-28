@@ -1,0 +1,214 @@
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.order-header > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-header h1 {
+  margin: 0;
+}
+
+.premium-order-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 140, 0, 0.2));
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.premium-order-banner mat-icon {
+  color: #ff8c00;
+}
+
+/* Tracking */
+.tracking-card {
+  margin-bottom: 24px;
+}
+
+.tracking-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+}
+
+.tracking-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.step-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.tracking-step.completed .step-icon {
+  background: #4caf50;
+  color: white;
+}
+
+.tracking-step.current .step-icon {
+  background: #3f51b5;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(63, 81, 181, 0.3);
+}
+
+.step-label {
+  font-size: 0.85rem;
+  color: #666;
+  text-align: center;
+}
+
+.tracking-step.completed .step-label,
+.tracking-step.current .step-label {
+  color: #333;
+  font-weight: 500;
+}
+
+.step-connector {
+  flex: 1;
+  height: 4px;
+  background: #e0e0e0;
+  margin: 0 8px;
+  position: relative;
+  top: -20px;
+}
+
+.step-connector.completed {
+  background: #4caf50;
+}
+
+/* Order Detail Grid */
+.order-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 24px;
+  align-items: start;
+}
+
+.items-card {
+  padding: 16px;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.order-item:last-of-type {
+  border-bottom: none;
+}
+
+.order-item:hover {
+  background: #fafafa;
+}
+
+.order-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+}
+
+.item-info p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.item-qty {
+  margin-top: 8px !important;
+}
+
+.item-subtotal {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #3f51b5;
+}
+
+.order-summary {
+  padding-top: 16px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.summary-row.discount {
+  color: #4caf50;
+}
+
+.summary-row.total {
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding-top: 16px;
+}
+
+/* Order Info Cards */
+.order-info-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.order-info-cards mat-card-content p {
+  margin: 0;
+  line-height: 1.8;
+}
+
+.order-info-cards mat-card-content button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .order-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-stepper {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .step-connector {
+    width: 4px;
+    height: 30px;
+    margin: 0;
+    top: 0;
+  }
+}

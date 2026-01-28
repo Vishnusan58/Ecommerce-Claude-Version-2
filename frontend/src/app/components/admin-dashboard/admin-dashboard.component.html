@@ -1,0 +1,339 @@
+<div class="container">
+  <h1>Admin Dashboard</h1>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    @if (isLoadingStats) {
+      <mat-card class="stat-card">
+        <mat-spinner diameter="30"></mat-spinner>
+      </mat-card>
+    } @else if (stats) {
+      <mat-card class="stat-card">
+        <mat-icon>attach_money</mat-icon>
+        <div class="stat-content">
+          <span class="stat-value">₹{{ stats.totalRevenue | number }}</span>
+          <span class="stat-label">Total Revenue</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-icon>shopping_bag</mat-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.totalOrders }}</span>
+          <span class="stat-label">Total Orders</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-icon>people</mat-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.totalUsers }}</span>
+          <span class="stat-label">Total Users</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card premium">
+        <mat-icon>star</mat-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.premiumUsers }}</span>
+          <span class="stat-label">Premium Users</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-icon>store</mat-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.totalSellers }}</span>
+          <span class="stat-label">Sellers</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card warning">
+        <mat-icon>pending_actions</mat-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.pendingSellers }}</span>
+          <span class="stat-label">Pending Sellers</span>
+        </div>
+      </mat-card>
+    }
+  </div>
+
+  <!-- Tabs -->
+  <mat-tab-group>
+    <!-- Users Tab -->
+    <mat-tab label="Users">
+      <div class="tab-content">
+        <div class="tab-header">
+          <h2>Users ({{ usersTotalElements }})</h2>
+          <mat-form-field appearance="outline">
+            <mat-label>Filter by Role</mat-label>
+            <mat-select [(ngModel)]="selectedRole" (selectionChange)="onRoleFilterChange()">
+              <mat-option value="">All Roles</mat-option>
+              @for (role of roles; track role) {
+                <mat-option [value]="role">{{ role }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        @if (isLoadingUsers) {
+          <div class="loading-container">
+            <mat-spinner></mat-spinner>
+          </div>
+        } @else {
+          <div class="users-table">
+            @for (user of users; track user.id) {
+              <mat-card class="user-row">
+                <div class="user-info">
+                  <div class="avatar">{{ user.name.charAt(0).toUpperCase() }}</div>
+                  <div>
+                    <strong>{{ user.name }}</strong>
+                    <span class="email">{{ user.email }}</span>
+                  </div>
+                </div>
+                <div class="user-role">
+                  <mat-form-field appearance="outline">
+                    <mat-select [value]="user.role" (selectionChange)="changeUserRole(user, $event.value)">
+                      @for (role of roles; track role) {
+                        <mat-option [value]="role">{{ role }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <div class="user-premium">
+                  @if (user.premiumStatus) {
+                    <mat-chip color="primary" selected>
+                      <mat-icon>star</mat-icon>
+                      Premium
+                    </mat-chip>
+                    <button mat-icon-button color="warn" (click)="cancelUserPremium(user)" matTooltip="Cancel Premium">
+                      <mat-icon>cancel</mat-icon>
+                    </button>
+                  } @else {
+                    <span class="no-premium">Not Premium</span>
+                  }
+                </div>
+              </mat-card>
+            }
+          </div>
+
+          <mat-paginator
+            [length]="usersTotalElements"
+            [pageSize]="usersPageSize"
+            [pageIndex]="usersPageIndex"
+            [pageSizeOptions]="[5, 10, 25]"
+            (page)="onUsersPageChange($event)">
+          </mat-paginator>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- Pending Sellers Tab -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        Pending Sellers
+        @if (pendingSellers.length > 0) {
+          <mat-chip class="tab-badge">{{ pendingSellers.length }}</mat-chip>
+        }
+      </ng-template>
+      <div class="tab-content">
+        <h2>Pending Seller Approvals</h2>
+
+        @if (isLoadingPendingSellers) {
+          <div class="loading-container">
+            <mat-spinner></mat-spinner>
+          </div>
+        } @else if (pendingSellers.length === 0) {
+          <div class="empty-state-small">
+            <mat-icon>check_circle</mat-icon>
+            <p>No pending seller applications</p>
+          </div>
+        } @else {
+          <div class="pending-sellers">
+            @for (seller of pendingSellers; track seller.id) {
+              <mat-card class="seller-card">
+                <div class="seller-info">
+                  <div class="avatar">{{ seller.name.charAt(0).toUpperCase() }}</div>
+                  <div>
+                    <strong>{{ seller.name }}</strong>
+                    <span class="email">{{ seller.email }}</span>
+                  </div>
+                </div>
+                <div class="seller-actions">
+                  <button mat-raised-button color="primary" (click)="approveSeller(seller)">
+                    <mat-icon>check</mat-icon>
+                    Approve
+                  </button>
+                  <button mat-stroked-button color="warn" (click)="rejectSeller(seller)">
+                    <mat-icon>close</mat-icon>
+                    Reject
+                  </button>
+                </div>
+              </mat-card>
+            }
+          </div>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- Coupons Tab -->
+    <mat-tab label="Coupons">
+      <div class="tab-content">
+        <div class="tab-header">
+          <h2>Coupons ({{ coupons.length }})</h2>
+          <button mat-raised-button color="primary" (click)="showCouponForm = !showCouponForm">
+            <mat-icon>{{ showCouponForm ? 'close' : 'add' }}</mat-icon>
+            {{ showCouponForm ? 'Cancel' : 'Create Coupon' }}
+          </button>
+        </div>
+
+        @if (showCouponForm) {
+          <mat-card class="form-card">
+            <form [formGroup]="couponForm" (ngSubmit)="createCoupon()">
+              <div class="form-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Coupon Code</mat-label>
+                  <input matInput formControlName="code" placeholder="SAVE20">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Discount Type</mat-label>
+                  <mat-select formControlName="discountType">
+                    <mat-option value="PERCENTAGE">Percentage</mat-option>
+                    <mat-option value="FIXED">Fixed Amount</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Discount Value</mat-label>
+                  <input matInput type="number" formControlName="discountValue">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Min Order Value (₹)</mat-label>
+                  <input matInput type="number" formControlName="minOrderValue">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Max Discount (₹)</mat-label>
+                  <input matInput type="number" formControlName="maxDiscount">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Usage Limit</mat-label>
+                  <input matInput type="number" formControlName="usageLimit">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Valid From</mat-label>
+                  <input matInput [matDatepicker]="fromPicker" formControlName="validFrom">
+                  <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #fromPicker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Valid Until</mat-label>
+                  <input matInput [matDatepicker]="untilPicker" formControlName="validUntil">
+                  <mat-datepicker-toggle matSuffix [for]="untilPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #untilPicker></mat-datepicker>
+                </mat-form-field>
+              </div>
+
+              <button mat-raised-button color="primary" type="submit" [disabled]="isSubmitting">
+                @if (isSubmitting) {
+                  <mat-spinner diameter="20"></mat-spinner>
+                } @else {
+                  Create Coupon
+                }
+              </button>
+            </form>
+          </mat-card>
+        }
+
+        @if (isLoadingCoupons) {
+          <div class="loading-container">
+            <mat-spinner></mat-spinner>
+          </div>
+        } @else {
+          <div class="coupons-grid">
+            @for (coupon of coupons; track coupon.id) {
+              <mat-card class="coupon-card">
+                <div class="coupon-code">{{ coupon.code }}</div>
+                <div class="coupon-details">
+                  <p>
+                    {{ coupon.discountType === 'PERCENTAGE' ? coupon.discountValue + '%' : '₹' + coupon.discountValue }} off
+                  </p>
+                  <p>Min order: ₹{{ coupon.minOrderValue | number }}</p>
+                  <p>Valid: {{ coupon.validFrom | date:'shortDate' }} - {{ coupon.validUntil | date:'shortDate' }}</p>
+                  <p>Used: {{ coupon.usedCount }}/{{ coupon.usageLimit }}</p>
+                </div>
+                <button mat-icon-button color="warn" (click)="deleteCoupon(coupon)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </mat-card>
+            }
+          </div>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- Categories Tab -->
+    <mat-tab label="Categories">
+      <div class="tab-content">
+        <div class="tab-header">
+          <h2>Categories ({{ categories.length }})</h2>
+          <button mat-raised-button color="primary" (click)="showCategoryForm = !showCategoryForm">
+            <mat-icon>{{ showCategoryForm ? 'close' : 'add' }}</mat-icon>
+            {{ showCategoryForm ? 'Cancel' : 'Add Category' }}
+          </button>
+        </div>
+
+        @if (showCategoryForm) {
+          <mat-card class="form-card">
+            <form [formGroup]="categoryForm" (ngSubmit)="addCategory()">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Category Name</mat-label>
+                <input matInput formControlName="name">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Description (optional)</mat-label>
+                <textarea matInput formControlName="description" rows="2"></textarea>
+              </mat-form-field>
+
+              <button mat-raised-button color="primary" type="submit" [disabled]="isSubmitting">
+                @if (isSubmitting) {
+                  <mat-spinner diameter="20"></mat-spinner>
+                } @else {
+                  Add Category
+                }
+              </button>
+            </form>
+          </mat-card>
+        }
+
+        @if (isLoadingCategories) {
+          <div class="loading-container">
+            <mat-spinner></mat-spinner>
+          </div>
+        } @else {
+          <div class="categories-list">
+            @for (category of categories; track category.id) {
+              <mat-card class="category-card">
+                <div class="category-info">
+                  <strong>{{ category.name }}</strong>
+                  @if (category.description) {
+                    <p>{{ category.description }}</p>
+                  }
+                </div>
+                <button mat-icon-button color="warn" (click)="deleteCategory(category)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </mat-card>
+            }
+          </div>
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

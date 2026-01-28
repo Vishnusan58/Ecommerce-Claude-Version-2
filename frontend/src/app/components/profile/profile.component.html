@@ -1,0 +1,139 @@
+<div class="container">
+  <h1>My Profile</h1>
+
+  @if (isLoading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (!isLoading && user) {
+    <div class="profile-layout">
+      <!-- Profile Card -->
+      <mat-card class="profile-card">
+        <div class="profile-header">
+          <div class="avatar">
+            <mat-icon>person</mat-icon>
+          </div>
+          <div class="user-info">
+            <h2>{{ user.name }}</h2>
+            <p>{{ user.email }}</p>
+            <mat-chip>{{ user.role }}</mat-chip>
+          </div>
+        </div>
+
+        @if (user.premiumStatus) {
+          <div class="premium-status active">
+            <mat-icon>star</mat-icon>
+            <div>
+              <strong>Premium Member</strong>
+              <p>Valid until: {{ user.premiumExpiry | date:'mediumDate' }}</p>
+            </div>
+          </div>
+        } @else {
+          <div class="premium-status">
+            <mat-icon>star_outline</mat-icon>
+            <div>
+              <strong>Upgrade to Premium</strong>
+              <p>Get free delivery, early access & more!</p>
+            </div>
+            <button mat-raised-button color="primary" (click)="subscribePremium()" [disabled]="isSubscribing">
+              @if (isSubscribing) {
+                <mat-spinner diameter="20"></mat-spinner>
+              } @else {
+                Subscribe Now
+              }
+            </button>
+          </div>
+        }
+      </mat-card>
+
+      <!-- Tabs -->
+      <mat-tab-group class="profile-tabs">
+        <!-- Edit Profile Tab -->
+        <mat-tab label="Edit Profile">
+          <div class="tab-content">
+            <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Full Name</mat-label>
+                <input matInput formControlName="name">
+                <mat-error>Name is required (min 2 characters)</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Email</mat-label>
+                <input matInput type="email" formControlName="email">
+                <mat-error>Enter a valid email</mat-error>
+              </mat-form-field>
+
+              <button mat-raised-button color="primary" type="submit" [disabled]="profileForm.invalid || isSaving">
+                @if (isSaving) {
+                  <mat-spinner diameter="20"></mat-spinner>
+                } @else {
+                  Save Changes
+                }
+              </button>
+            </form>
+          </div>
+        </mat-tab>
+
+        <!-- Change Password Tab -->
+        <mat-tab label="Change Password">
+          <div class="tab-content">
+            <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Current Password</mat-label>
+                <input matInput type="password" formControlName="currentPassword">
+                <mat-error>Current password is required</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>New Password</mat-label>
+                <input matInput type="password" formControlName="newPassword">
+                <mat-error>New password is required (min 6 characters)</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Confirm New Password</mat-label>
+                <input matInput type="password" formControlName="confirmPassword">
+                <mat-error>Please confirm your new password</mat-error>
+              </mat-form-field>
+
+              <button mat-raised-button color="primary" type="submit" [disabled]="passwordForm.invalid || isSaving">
+                @if (isSaving) {
+                  <mat-spinner diameter="20"></mat-spinner>
+                } @else {
+                  Change Password
+                }
+              </button>
+            </form>
+          </div>
+        </mat-tab>
+
+        <!-- Recently Viewed Tab -->
+        <mat-tab label="Recently Viewed">
+          <div class="tab-content">
+            @if (recentlyViewed.length === 0) {
+              <div class="empty-state-small">
+                <mat-icon>history</mat-icon>
+                <p>No recently viewed products</p>
+              </div>
+            } @else {
+              <div class="recently-viewed-grid">
+                @for (product of recentlyViewed; track product.id) {
+                  <mat-card class="product-mini-card" (click)="viewProduct(product.id)">
+                    <img [src]="product.imageUrl" [alt]="product.name">
+                    <div class="product-info">
+                      <h4>{{ product.name }}</h4>
+                      <p class="price">₹{{ product.price | number }}</p>
+                    </div>
+                  </mat-card>
+                }
+              </div>
+            }
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+  }
+</div>

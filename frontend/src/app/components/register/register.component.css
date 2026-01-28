@@ -1,0 +1,121 @@
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 64px);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.auth-form {
+  width: 100%;
+  max-width: 450px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 40px 32px;
+}
+
+mat-card-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 0;
+}
+
+mat-card-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+mat-card-subtitle {
+  color: #666;
+  font-size: 16px;
+}
+
+mat-card-content {
+  padding: 0;
+}
+
+.form-field {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* Fix input field styling */
+::ng-deep .form-field .mat-mdc-text-field-wrapper {
+  background-color: #f8f9fa !important;
+}
+
+::ng-deep .form-field .mat-mdc-form-field-flex {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+::ng-deep .form-field .mdc-notched-outline__leading,
+::ng-deep .form-field .mdc-notched-outline__notch,
+::ng-deep .form-field .mdc-notched-outline__trailing {
+  border-color: #e0e0e0 !important;
+}
+
+::ng-deep .form-field.mat-focused .mdc-notched-outline__leading,
+::ng-deep .form-field.mat-focused .mdc-notched-outline__notch,
+::ng-deep .form-field.mat-focused .mdc-notched-outline__trailing {
+  border-color: #3f51b5 !important;
+}
+
+::ng-deep .form-field .mat-mdc-form-field-icon-suffix {
+  color: #666;
+}
+
+button[type="submit"] {
+  height: 52px;
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 24px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+button[type="submit"] mat-spinner {
+  display: inline-block;
+}
+
+mat-card-actions {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0 0 0;
+  margin: 0;
+  border-top: 1px solid #eee;
+  margin-top: 24px;
+}
+
+mat-card-actions p {
+  margin: 0;
+  color: #555;
+  font-size: 14px;
+}
+
+mat-card-actions a {
+  color: #3f51b5;
+  font-weight: 500;
+}
+
+.full-width {
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .auth-form {
+    padding: 32px 24px;
+    margin: 16px;
+  }
+
+  mat-card-title {
+    font-size: 24px;
+  }
+}
