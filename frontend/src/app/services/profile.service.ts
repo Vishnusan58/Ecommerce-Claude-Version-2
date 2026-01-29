@@ -12,7 +12,12 @@ export interface UpdateProfileRequest {
 
 export interface SubscriptionResponse {
   message: string;
-  premiumExpiry: Date;
+  subscriptionId?: number;
+  planType?: string;
+  startDate?: string;
+  endDate?: string;
+  active?: boolean;
+  autoRenew?: boolean;
 }
 
 @Injectable({
@@ -31,11 +36,11 @@ export class ProfileService {
     return this.http.put<User>(this.API_URL, data);
   }
 
-  subscribePremium(): Observable<SubscriptionResponse> {
-    return this.http.post<SubscriptionResponse>('/api/subscription', {});
+  subscribePremium(planType: string = 'MONTHLY'): Observable<SubscriptionResponse> {
+    return this.http.post<SubscriptionResponse>('/api/user/subscription/subscribe', { planType });
   }
 
   cancelPremium(): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>('/api/subscription');
+    return this.http.delete<{ message: string }>('/api/user/subscription/cancel');
   }
 }
