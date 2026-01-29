@@ -67,10 +67,10 @@ export class CompareComponent implements OnInit {
 
   loadProducts(id1: number, id2: number): void {
     this.isLoading = true;
-    this.productService.compareProducts(id1, id2).subscribe({
+    this.productService.compareProducts([id1, id2]).subscribe({
       next: (response) => {
-        this.product1 = response.product1;
-        this.product2 = response.product2;
+        this.product1 = response[0] || null;
+        this.product2 = response[1] || null;
         this.isLoading = false;
       },
       error: () => {

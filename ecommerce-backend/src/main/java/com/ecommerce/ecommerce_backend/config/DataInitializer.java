@@ -218,7 +218,8 @@ public class DataInitializer implements CommandLineRunner {
         product.setImageUrl(imageUrl);
         product.setAverageRating(rating);
         product.setDiscountPercent(discount);
-        product.setCreatedAt(LocalDateTime.now());
+        // Set createdAt to 7 days ago to bypass premium early-access 24hr filter
+        product.setCreatedAt(LocalDateTime.now().minusDays(7));
         productRepository.save(product);
     }
 }

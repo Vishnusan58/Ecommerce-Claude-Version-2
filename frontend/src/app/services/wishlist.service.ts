@@ -7,21 +7,29 @@ import { Product } from '../models/product.model';
   providedIn: 'root'
 })
 export class WishlistService {
-  private readonly API_URL = '/api/wishlist';
+  private readonly API_URL = '/api/user/wishlist';
 
   private wishlistSubject = new BehaviorSubject<Product[]>([]);
   public wishlist$ = this.wishlistSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
-  getWishlist(): Observable<Product[]> {
-    return this.http.get<Product[]>(this.API_URL).pipe(
-      tap(products => this.wishlistSubject.next(products))
+  getWishlist(): Observable<any> {
+    return this.http.get<any>(this.API_URL).pipe(
+      tap(response => {
+        const products = response.items.map((item: any) => ({
+          id: item.productId,
+          name: item.productName,
+          price: item.price,
+          averageRating: item.rating
+        }));
+        this.wishlistSubject.next(products);
+      })
     );
   }
 
-  addToWishlist(productId: number): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(this.API_URL, { productId }).pipe(
+  addToWishlist(productId: number): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/${productId}`, {}).pipe(
       tap(() => this.getWishlist().subscribe())
     );
   }

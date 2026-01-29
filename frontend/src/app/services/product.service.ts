@@ -40,25 +40,16 @@ export class ProductService {
     return this.http.get<Product>(`${this.API_URL}/${id}`);
   }
 
-  searchProducts(searchTerm: string, page: number = 0, size: number = 12): Observable<PageResponse<Product>> {
-    const params = new HttpParams()
-      .set('q', searchTerm)
-      .set('page', page.toString())
-      .set('size', size.toString());
-
-    return this.http.get<PageResponse<Product>>(`${this.API_URL}/search`, { params });
+  searchProducts(searchTerm: string, page: number = 0, size: number = 12): Observable<Product[]> {
+    return this.http.post<Product[]>(`${this.API_URL}/search`, { keyword: searchTerm });
   }
 
   getCategories(): Observable<Category[]> {
     return this.http.get<Category[]>(this.CATEGORIES_URL);
   }
 
-  compareProducts(id1: number, id2: number): Observable<{ product1: Product; product2: Product }> {
-    const params = new HttpParams()
-      .set('id1', id1.toString())
-      .set('id2', id2.toString());
-
-    return this.http.get<{ product1: Product; product2: Product }>(`${this.API_URL}/compare`, { params });
+  compareProducts(productIds: number[]): Observable<any[]> {
+    return this.http.post<any[]>(`${this.API_URL}/compare`, productIds);
   }
 
   getRecentlyViewed(): Product[] {

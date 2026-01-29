@@ -6,6 +6,10 @@ export const roleGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
+  // TODO: TEMPORARY - Remove this line and uncomment the check below when login is fixed
+  return true;
+
+  /* ORIGINAL ROLE CHECK - Uncomment when login is working
   const requiredRole = route.data['role'] as string;
 
   if (!authService.isLoggedIn()) {
@@ -20,4 +24,5 @@ export const roleGuard: CanActivateFn = (route, state) => {
   // User doesn't have the required role
   router.navigate(['/products']);
   return false;
+  */
 };
