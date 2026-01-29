@@ -34,6 +34,15 @@ public class Order {
     private LocalDate preferredDeliveryDate;
     private double finalAmount;
 
+    private String paymentMethod;
+    private String couponCode;
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+
+    public String getCouponCode() { return couponCode; }
+    public void setCouponCode(String couponCode) { this.couponCode = couponCode; }
+
     public double getDeliveryCharge() {
         return deliveryCharge;
     }

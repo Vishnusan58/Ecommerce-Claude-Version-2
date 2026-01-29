@@ -1,20 +1,22 @@
 <div class="container">
   <!-- Search and Filters -->
   <div class="filters-section">
+    <!-- Full-width Search Bar -->
     <div class="search-bar">
       <mat-form-field appearance="outline" class="search-field">
         <mat-label>Search products</mat-label>
-        <input matInput [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" placeholder="Search...">
-        <button mat-icon-button matSuffix (click)="onSearch()">
+        <input matInput [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" placeholder="Search for products, brands, categories...">
+        <button mat-icon-button matSuffix (click)="onSearch()" matTooltip="Search">
           <mat-icon>search</mat-icon>
         </button>
       </mat-form-field>
     </div>
 
+    <!-- Filter Row - All controls aligned horizontally with equal 56px height -->
     <div class="filter-row">
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="filter-field">
         <mat-label>Category</mat-label>
-        <mat-select [(ngModel)]="selectedCategoryId" (selectionChange)="onFilterChange()">
+        <mat-select [(ngModel)]="selectedCategoryId" (selectionChange)="onFilterChange()" panelClass="custom-select-panel">
           <mat-option [value]="null">All Categories</mat-option>
           @for (category of categories; track category.id) {
             <mat-option [value]="category.id">{{ category.name }}</mat-option>
@@ -22,19 +24,21 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="filter-field">
         <mat-label>Min Price</mat-label>
-        <input matInput type="number" [(ngModel)]="minPrice" (change)="onFilterChange()" placeholder="0">
+        <input matInput type="number" [(ngModel)]="minPrice" (change)="onFilterChange()" placeholder="0" min="0">
+        <span matTextPrefix>₹&nbsp;</span>
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="filter-field">
         <mat-label>Max Price</mat-label>
-        <input matInput type="number" [(ngModel)]="maxPrice" (change)="onFilterChange()" placeholder="10000">
+        <input matInput type="number" [(ngModel)]="maxPrice" (change)="onFilterChange()" placeholder="100000" min="0">
+        <span matTextPrefix>₹&nbsp;</span>
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="filter-field">
         <mat-label>Sort By</mat-label>
-        <mat-select [(ngModel)]="sortBy" (selectionChange)="onSortChange()">
+        <mat-select [(ngModel)]="sortBy" (selectionChange)="onSortChange()" panelClass="custom-select-panel">
           <mat-option value="createdAt,desc">Newest First</mat-option>
           <mat-option value="price,asc">Price: Low to High</mat-option>
           <mat-option value="price,desc">Price: High to Low</mat-option>
@@ -42,7 +46,7 @@
         </mat-select>
       </mat-form-field>
 
-      <button mat-stroked-button (click)="clearFilters()">
+      <button mat-stroked-button class="clear-button" (click)="clearFilters()" matTooltip="Clear all filters">
         <mat-icon>clear</mat-icon>
         Clear Filters
       </button>
@@ -104,26 +108,28 @@
                 @for (star of [1,2,3,4,5]; track star) {
                   <mat-icon>{{ star <= getProductRating(product) ? 'star' : 'star_border' }}</mat-icon>
                 }
-                <span>({{ getReviewCount(product) }})</span>
+                @if (getReviewCount(product) > 0) {
+                  <span class="review-count">({{ getReviewCount(product) }})</span>
+                }
               </div>
 
               <div class="price-section">
-                <span class="price">₹{{ product.price | number }}</span>
+                <span class="price">{{ formatPrice(product.price) }}</span>
                 @if (product.originalPrice && product.originalPrice > product.price) {
-                  <span class="original-price">₹{{ product.originalPrice | number }}</span>
+                  <span class="original-price">{{ formatPrice(product.originalPrice) }}</span>
                 }
               </div>
             </mat-card-content>
 
             <mat-card-actions>
-              <button mat-raised-button color="primary" (click)="addToCart(product, $event)" [disabled]="getProductStock(product) === 0">
+              <button mat-raised-button color="primary" (click)="addToCart(product, $event)" [disabled]="getProductStock(product) === 0" matTooltip="{{ getProductStock(product) === 0 ? 'Out of Stock' : 'Add to Cart' }}">
                 <mat-icon>add_shopping_cart</mat-icon>
                 {{ getProductStock(product) === 0 ? 'Out of Stock' : 'Add to Cart' }}
               </button>
-              <button mat-icon-button (click)="toggleWishlist(product, $event)" [color]="isInWishlist(getProductId(product)) ? 'warn' : ''">
+              <button mat-icon-button (click)="toggleWishlist(product, $event)" [color]="isInWishlist(getProductId(product)) ? 'warn' : ''" matTooltip="{{ isInWishlist(getProductId(product)) ? 'Remove from Wishlist' : 'Add to Wishlist' }}">
                 <mat-icon>{{ isInWishlist(getProductId(product)) ? 'favorite' : 'favorite_border' }}</mat-icon>
               </button>
-              <button mat-icon-button (click)="toggleCompare(product, $event)" [color]="isInCompare(getProductId(product)) ? 'primary' : ''">
+              <button mat-icon-button (click)="toggleCompare(product, $event)" [color]="isInCompare(getProductId(product)) ? 'primary' : ''" matTooltip="Compare Products">
                 <mat-icon>compare_arrows</mat-icon>
               </button>
             </mat-card-actions>

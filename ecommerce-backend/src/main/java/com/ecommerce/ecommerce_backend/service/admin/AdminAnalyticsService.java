@@ -1,5 +1,6 @@
 package com.ecommerce.ecommerce_backend.service.admin;
 
+import com.ecommerce.ecommerce_backend.enums.UserRole;
 import com.ecommerce.ecommerce_backend.model.Order;
 import com.ecommerce.ecommerce_backend.model.User;
 import com.ecommerce.ecommerce_backend.repository.OrderRepository;
@@ -30,6 +31,9 @@ public class AdminAnalyticsService {
         Map<String, Object> dashboard = new HashMap<>();
         dashboard.put("totalUsers", userRepository.count());
         dashboard.put("totalOrders", orderRepository.count());
+        dashboard.put("premiumUsers", userRepository.findByPremiumStatusTrue().size());
+        dashboard.put("totalSellers", userRepository.findByRoleAndSellerVerified(UserRole.SELLER, true).size());
+        dashboard.put("pendingSellers", userRepository.findByRoleAndSellerVerified(UserRole.SELLER, false).size());
 
         return dashboard;
     }

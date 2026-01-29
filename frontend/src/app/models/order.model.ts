@@ -17,6 +17,8 @@ export interface Order {
   isPremiumOrder: boolean;
   createdAt: Date;
   updatedAt?: Date;
+  itemCount?: number; // Used for seller dashboard
+  orderItemId?: number; // Used for seller dashboard
 }
 
 export interface OrderItem {
@@ -37,7 +39,7 @@ export interface Address {
   country: string;
 }
 
-export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
+export type OrderStatus = 'PLACED' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'RETURN_REQUESTED' | 'RETURN_APPROVED' | 'RETURN_REJECTED' | 'REFUNDED';
 
 export type PaymentMethod = 'UPI' | 'CARD' | 'COD';
 

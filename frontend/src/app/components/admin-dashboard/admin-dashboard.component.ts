@@ -18,7 +18,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { AdminService, AdminStats } from '../../services/admin.service';
 import { User } from '../../models/user.model';
 import { Coupon } from '../../models/coupon.model';
-import { Category } from '../../models/product.model';
+import { Category, Product } from '../../models/product.model';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -40,7 +41,8 @@ import { Category } from '../../models/product.model';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    MatTooltipModule
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.css'
@@ -49,12 +51,18 @@ export class AdminDashboardComponent implements OnInit {
   stats: AdminStats | null = null;
   users: User[] = [];
   pendingSellers: User[] = [];
+  verifiedSellers: User[] = [];
+  premiumUsers: User[] = [];
+  products: Product[] = [];
   coupons: Coupon[] = [];
   categories: Category[] = [];
 
   isLoadingStats = true;
   isLoadingUsers = false;
   isLoadingPendingSellers = false;
+  isLoadingVerifiedSellers = false;
+  isLoadingPremiumUsers = false;
+  isLoadingProducts = false;
   isLoadingCoupons = false;
   isLoadingCategories = false;
 
@@ -63,6 +71,10 @@ export class AdminDashboardComponent implements OnInit {
   usersPageSize = 10;
   usersPageIndex = 0;
   selectedRole = '';
+
+  productsTotalElements = 0;
+  productsPageSize = 12;
+  productsPageIndex = 0;
 
   // Forms
   couponForm: FormGroup;
@@ -99,6 +111,9 @@ export class AdminDashboardComponent implements OnInit {
     this.loadStats();
     this.loadUsers();
     this.loadPendingSellers();
+    this.loadVerifiedSellers();
+    this.loadPremiumUsers();
+    this.loadProducts();
     this.loadCoupons();
     this.loadCategories();
   }
@@ -139,6 +154,104 @@ export class AdminDashboardComponent implements OnInit {
       },
       error: () => this.isLoadingPendingSellers = false
     });
+  }
+
+  loadVerifiedSellers(): void {
+    this.isLoadingVerifiedSellers = true;
+    this.adminService.getVerifiedSellers().subscribe({
+      next: (sellers) => {
+        this.verifiedSellers = sellers;
+        this.isLoadingVerifiedSellers = false;
+      },
+      error: () => this.isLoadingVerifiedSellers = false
+    });
+  }
+
+  loadPremiumUsers(): void {
+    this.isLoadingPremiumUsers = true;
+    this.adminService.getPremiumUsers().subscribe({
+      next: (users) => {
+        this.premiumUsers = users;
+        this.isLoadingPremiumUsers = false;
+      },
+      error: () => this.isLoadingPremiumUsers = false
+    });
+  }
+
+  loadProducts(): void {
+    this.isLoadingProducts = true;
+    this.adminService.getAllProducts(this.productsPageIndex, this.productsPageSize).subscribe({
+      next: (response) => {
+        this.products = response?.content || [];
+        this.productsTotalElements = response?.totalElements || 0;
+        this.isLoadingProducts = false;
+      },
+      error: () => {
+        this.products = [];
+        this.isLoadingProducts = false;
+      }
+    });
+  }
+
+  onProductsPageChange(event: PageEvent): void {
+    this.productsPageIndex = event.pageIndex;
+    this.productsPageSize = event.pageSize;
+    this.loadProducts();
+  }
+
+  deleteSeller(seller: User): void {
+    if (confirm(`Remove seller "${seller.name}"? This will demote them to regular user.`)) {
+      this.adminService.deleteSeller(seller.id).subscribe({
+        next: () => {
+          this.verifiedSellers = this.verifiedSellers.filter(s => s.id !== seller.id);
+          this.loadStats();
+          this.snackBar.open('Seller removed', 'Close', { duration: 3000 });
+        },
+        error: () => {
+          this.snackBar.open('Failed to remove seller', 'Close', { duration: 3000 });
+        }
+      });
+    }
+  }
+
+  grantPremium(user: User): void {
+    this.adminService.grantPremium(user.id).subscribe({
+      next: () => {
+        user.premiumStatus = true;
+        this.loadPremiumUsers();
+        this.loadStats();
+        this.snackBar.open('Premium granted', 'Close', { duration: 3000 });
+      },
+      error: () => {
+        this.snackBar.open('Failed to grant premium', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  deleteProduct(product: Product): void {
+    const productId = product.id ?? product.productId;
+    if (!productId) return;
+
+    if (confirm(`Delete product "${product.name}"?`)) {
+      this.adminService.deleteProduct(productId).subscribe({
+        next: () => {
+          this.products = this.products.filter(p => (p.id ?? p.productId) !== productId);
+          this.productsTotalElements--;
+          this.snackBar.open('Product deleted', 'Close', { duration: 3000 });
+        },
+        error: () => {
+          this.snackBar.open('Failed to delete product', 'Close', { duration: 3000 });
+        }
+      });
+    }
+  }
+
+  getProductId(product: Product): number {
+    return product.id ?? product.productId ?? 0;
+  }
+
+  getProductStock(product: Product): number {
+    return product.stock ?? product.stockQuantity ?? 0;
   }
 
   loadCoupons(): void {
@@ -191,6 +304,8 @@ export class AdminDashboardComponent implements OnInit {
       this.adminService.cancelUserPremium(user.id).subscribe({
         next: () => {
           user.premiumStatus = false;
+          this.premiumUsers = this.premiumUsers.filter(u => u.id !== user.id);
+          this.loadStats();
           this.snackBar.open('Premium subscription cancelled', 'Close', { duration: 3000 });
         },
         error: () => {
@@ -204,6 +319,7 @@ export class AdminDashboardComponent implements OnInit {
     this.adminService.approveSeller(user.id).subscribe({
       next: () => {
         this.pendingSellers = this.pendingSellers.filter(s => s.id !== user.id);
+        this.loadVerifiedSellers();
         this.loadStats();
         this.snackBar.open('Seller approved', 'Close', { duration: 3000 });
       },

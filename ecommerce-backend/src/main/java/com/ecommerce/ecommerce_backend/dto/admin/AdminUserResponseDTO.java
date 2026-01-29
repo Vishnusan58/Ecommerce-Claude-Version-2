@@ -4,20 +4,29 @@ import java.time.LocalDateTime;
 
 public class AdminUserResponseDTO {
 
-    private Long userId;
+    private Long id;
+    private String name;
     private String email;
     private String role;
-    private boolean premium;
+    private boolean premiumStatus;
     private LocalDateTime createdAt;
 
     public AdminUserResponseDTO() {}
 
-    public Long getUserId() {
-        return userId;
+    public Long getId() {
+        return id;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEmail() {
@@ -36,12 +45,12 @@ public class AdminUserResponseDTO {
         this.role = role;
     }
 
-    public boolean isPremium() {
-        return premium;
+    public boolean isPremiumStatus() {
+        return premiumStatus;
     }
 
-    public void setPremium(boolean premium) {
-        this.premium = premium;
+    public void setPremiumStatus(boolean premiumStatus) {
+        this.premiumStatus = premiumStatus;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -44,12 +44,12 @@ export class OrderListComponent implements OnInit {
 
   statusOptions: { value: OrderStatus | ''; label: string }[] = [
     { value: '', label: 'All Orders' },
-    { value: 'PENDING', label: 'Pending' },
+    { value: 'PLACED', label: 'Placed' },
     { value: 'CONFIRMED', label: 'Confirmed' },
-    { value: 'PROCESSING', label: 'Processing' },
     { value: 'SHIPPED', label: 'Shipped' },
     { value: 'DELIVERED', label: 'Delivered' },
     { value: 'CANCELLED', label: 'Cancelled' },
+    { value: 'RETURN_REQUESTED', label: 'Return Requested' },
     { value: 'REFUNDED', label: 'Refunded' }
   ];
 
@@ -73,12 +73,16 @@ export class OrderListComponent implements OnInit {
     const status = this.selectedStatus || undefined;
 
     this.orderService.getOrders(this.pageIndex, this.pageSize, status).subscribe({
-      next: (response) => {
-        this.orders = response.content;
-        this.totalElements = response.totalElements;
+      next: (response: any) => {
+        // Ensure orders is always an array
+        this.orders = response?.content || [];
+        this.totalElements = response?.totalElements || 0;
         this.isLoading = false;
       },
-      error: () => {
+      error: (error) => {
+        console.error('Failed to load orders:', error);
+        this.orders = []; // Ensure orders is an array even on error
+        this.totalElements = 0;
         this.isLoading = false;
         this.snackBar.open('Failed to load orders', 'Close', { duration: 3000 });
       }
@@ -102,12 +106,14 @@ export class OrderListComponent implements OnInit {
 
   getStatusColor(status: OrderStatus): string {
     switch (status) {
-      case 'PENDING': return 'warn';
+      case 'PLACED': return 'warn';
       case 'CONFIRMED':
-      case 'PROCESSING':
       case 'SHIPPED': return 'primary';
       case 'DELIVERED': return 'accent';
       case 'CANCELLED':
+      case 'RETURN_REQUESTED':
+      case 'RETURN_APPROVED':
+      case 'RETURN_REJECTED':
       case 'REFUNDED': return 'warn';
       default: return '';
     }
@@ -115,12 +121,14 @@ export class OrderListComponent implements OnInit {
 
   getStatusIcon(status: OrderStatus): string {
     switch (status) {
-      case 'PENDING': return 'schedule';
+      case 'PLACED': return 'schedule';
       case 'CONFIRMED': return 'check_circle';
-      case 'PROCESSING': return 'inventory_2';
       case 'SHIPPED': return 'local_shipping';
       case 'DELIVERED': return 'done_all';
       case 'CANCELLED': return 'cancel';
+      case 'RETURN_REQUESTED': return 'assignment_return';
+      case 'RETURN_APPROVED': return 'check';
+      case 'RETURN_REJECTED': return 'block';
       case 'REFUNDED': return 'replay';
       default: return 'info';
     }

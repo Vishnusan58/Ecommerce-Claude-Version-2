@@ -1,6 +1,6 @@
 <mat-card class="add-product-card">
   <mat-card-header>
-    <mat-card-title>Add New Product</mat-card-title>
+    <mat-card-title>{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</mat-card-title>
   </mat-card-header>
 
   <mat-card-content>
@@ -69,14 +69,20 @@
       </div>
 
       <div class="form-actions">
+        @if (isEditMode) {
+          <button mat-button type="button" (click)="cancel()">
+            Cancel
+          </button>
+        }
         <button mat-raised-button color="primary" type="submit" [disabled]="isLoading">
           @if (isLoading) {
             <mat-spinner diameter="20"></mat-spinner>
+          } @else if (isEditMode) {
+            <mat-icon>save</mat-icon>
+            Update Product
           } @else {
-            <ng-container>
-              <mat-icon>add</mat-icon>
-              Add Product
-            </ng-container>
+            <mat-icon>add</mat-icon>
+            Add Product
           }
         </button>
       </div>

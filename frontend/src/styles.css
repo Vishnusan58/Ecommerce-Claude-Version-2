@@ -244,3 +244,117 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .error-snackbar {
   --mdc-snackbar-container-color: #f44336;
 }
+
+/* ===== MATERIAL SELECT DROPDOWN FIXES ===== */
+
+/*
+ * CDK Overlay Container - CRITICAL for proper z-index layering
+ * This container holds ALL Material overlays (dropdowns, modals, menus, etc.)
+ * Must have highest z-index to appear above all page content
+ */
+.cdk-overlay-container {
+  position: fixed !important;
+  z-index: 9999 !important;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cdk-overlay-connected-position-bounding-box {
+  z-index: 9999 !important;
+}
+
+.cdk-overlay-pane {
+  z-index: 9999 !important;
+  pointer-events: auto;
+}
+
+/* Optional backdrop for dropdown - dims background when dropdown is open */
+.cdk-overlay-backdrop {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9998 !important;
+  pointer-events: auto;
+}
+
+.cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+  opacity: 1;
+}
+
+/* Transparent backdrop for select dropdowns (doesn't dim but captures clicks) */
+.cdk-overlay-transparent-backdrop {
+  background: transparent;
+}
+
+/* Fix mat-select panel overflow and scrollbar issues */
+.mat-mdc-select-panel {
+  max-height: 320px !important;
+  overflow: auto !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+  background: white !important;
+  position: relative;
+  z-index: 9999 !important;
+}
+
+/* Smooth scrolling for dropdown */
+.mat-mdc-select-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.mat-mdc-select-panel::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.mat-mdc-select-panel::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.mat-mdc-select-panel::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Mat-select option styling */
+.mat-mdc-option {
+  min-height: 48px !important;
+  padding: 0 16px !important;
+  background: white !important;
+}
+
+.mat-mdc-option:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.mat-mdc-option.mat-mdc-option-active,
+.mat-mdc-option.mdc-list-item--selected {
+  background-color: rgba(63, 81, 181, 0.12) !important;
+}
+
+/* Fix form field wrapper to not clip dropdowns */
+.mat-mdc-form-field {
+  overflow: visible !important;
+}
+
+.mat-mdc-text-field-wrapper {
+  overflow: visible !important;
+}
+
+/* Ensure select trigger doesn't clip */
+.mat-mdc-select-trigger {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Custom panel class for product list dropdowns */
+.custom-select-panel {
+  margin-top: 4px !important;
+}
+

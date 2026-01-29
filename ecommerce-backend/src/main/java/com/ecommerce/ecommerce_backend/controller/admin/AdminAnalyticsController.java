@@ -25,18 +25,25 @@ public class AdminAnalyticsController {
 
         User admin = authService.getUserById(adminId);
 
+        var overview = analyticsService.getDashboardOverview(admin);
+
         AdminAnalyticsDTO dto = new AdminAnalyticsDTO();
-        dto.setTotalUsers(analyticsService.getDashboardOverview(admin)
-                .get("totalUsers") instanceof Long
-                ? (Long) analyticsService.getDashboardOverview(admin).get("totalUsers")
-                : 0);
-
-        dto.setTotalOrders(analyticsService.getDashboardOverview(admin)
-                .get("totalOrders") instanceof Long
-                ? (Long) analyticsService.getDashboardOverview(admin).get("totalOrders")
-                : 0);
-
+        dto.setTotalUsers(extractLong(overview.get("totalUsers")));
+        dto.setTotalOrders(extractLong(overview.get("totalOrders")));
+        dto.setPremiumUsers(extractLong(overview.get("premiumUsers")));
+        dto.setTotalSellers(extractLong(overview.get("totalSellers")));
+        dto.setPendingSellers(extractLong(overview.get("pendingSellers")));
         dto.setTotalRevenue(analyticsService.getTotalRevenue(admin));
+
         return dto;
+    }
+
+    private long extractLong(Object value) {
+        if (value instanceof Long) {
+            return (Long) value;
+        } else if (value instanceof Integer) {
+            return ((Integer) value).longValue();
+        }
+        return 0;
     }
 }

@@ -4,6 +4,7 @@ import com.ecommerce.ecommerce_backend.enums.OrderStatus;
 import com.ecommerce.ecommerce_backend.model.*;
 import com.ecommerce.ecommerce_backend.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,7 +22,8 @@ public class OrderService {
     public OrderService(OrderRepository orderRepository,
                         OrderItemRepository orderItemRepository,
                         CartItemRepository cartItemRepository,
-                        CartRepository cartRepository, PremiumSubscriptionRepository premiumSubscriptionRepository) {
+                        CartRepository cartRepository,
+                        PremiumSubscriptionRepository premiumSubscriptionRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
@@ -29,7 +31,15 @@ public class OrderService {
         this.premiumSubscriptionRepository = premiumSubscriptionRepository;
     }
 
+    // Original method signature for backward compatibility
     public Order placeOrder(User user, UserAddress address, LocalDate preferredDeliveryDate) {
+        return placeOrder(user, address, preferredDeliveryDate, "COD", null);
+    }
+
+    // New method with payment method and coupon code support
+    @Transactional
+    public Order placeOrder(User user, UserAddress address, LocalDate preferredDeliveryDate,
+                           String paymentMethod, String couponCode) {
 
         // 1️⃣ Fetch cart
         Cart cart = cartRepository.findByUser(user)
@@ -51,13 +61,15 @@ public class OrderService {
         boolean isPremium = premiumSubscriptionRepository
                 .existsByUserAndActiveTrue(user);
 
-        // 4️⃣ Create Order (THIS IS WHAT YOU ASKED ABOUT)
+        // 4️⃣ Create Order
         Order order = new Order();
         order.setUser(user);
         order.setAddress(address);
         order.setOrderDate(LocalDateTime.now());
         order.setStatus(OrderStatus.PLACED);
         order.setTotalAmount(totalAmount);
+        order.setPaymentMethod(paymentMethod);
+        order.setCouponCode(couponCode);
 
         // 5️⃣ Delivery charge logic
         double deliveryCharge = isPremium ? 0 : 50;
@@ -76,13 +88,20 @@ public class OrderService {
             order.setPreferredDeliveryDate(preferredDeliveryDate);
         }
 
-        // 8️⃣ Final amount
-        order.setFinalAmount(totalAmount + deliveryCharge);
+        // 8️⃣ Apply coupon discount if provided
+        double discount = 0;
+        if (couponCode != null && !couponCode.trim().isEmpty()) {
+            // TODO: Implement coupon validation and discount calculation
+            // For now, just log it
+        }
 
-        // 9️⃣ Save order first
+        // 9️⃣ Final amount
+        order.setFinalAmount(totalAmount + deliveryCharge - discount);
+
+        // 🔟 Save order first
         Order savedOrder = orderRepository.save(order);
 
-        // 🔟 Create order items
+        // 1️⃣1️⃣ Create order items
         for (CartItem cartItem : cartItems) {
 
             OrderItem orderItem = new OrderItem();
@@ -96,7 +115,7 @@ public class OrderService {
             orderItemRepository.save(orderItem);
         }
 
-        // 1️⃣1️⃣ Clear cart after successful order
+        // 1️⃣2️⃣ Clear cart after successful order
         cartItemRepository.deleteAll(cartItems);
 
         return savedOrder;
@@ -104,6 +123,43 @@ public class OrderService {
 
     public List<Order> getOrders(User user) {
         return orderRepository.findByUser(user);
+    }
+
+    public Order getOrderById(Long orderId, User user) {
+        return orderRepository.findByIdAndUser(orderId, user)
+                .orElse(null);
+    }
+
+    @Transactional
+    public Order cancelOrder(Long orderId, User user) {
+        Order order = orderRepository.findByIdAndUser(orderId, user)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        // Check if order can be cancelled
+        if (order.getStatus() == OrderStatus.DELIVERED) {
+            throw new RuntimeException("Cannot cancel a delivered order");
+        }
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            throw new RuntimeException("Order is already cancelled");
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public void requestRefund(Long orderId, User user, String reason) {
+        Order order = orderRepository.findByIdAndUser(orderId, user)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        // Check if order can be refunded
+        if (order.getStatus() != OrderStatus.DELIVERED) {
+            throw new RuntimeException("Only delivered orders can be refunded");
+        }
+
+        // Mark as refund requested (you might want to add a REFUND_REQUESTED status)
+        order.setStatus(OrderStatus.CANCELLED);
+        orderRepository.save(order);
     }
 
     private boolean isPremiumUser(User user) {

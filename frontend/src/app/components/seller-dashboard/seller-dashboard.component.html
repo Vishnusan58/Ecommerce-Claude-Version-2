@@ -56,37 +56,58 @@
         </div>
 
         @if (showAddProduct) {
-          <app-add-product (productAdded)="onProductAdded()"></app-add-product>
+          <app-add-product
+            [productToEdit]="productToEdit"
+            (productAdded)="onProductAdded()"
+            (productUpdated)="onProductUpdated()"
+            (cancelled)="onEditCancelled()">
+          </app-add-product>
         }
 
         @if (isLoadingProducts) {
           <div class="loading-container">
             <mat-spinner></mat-spinner>
           </div>
+        } @else if (products.length === 0) {
+          <div class="empty-state">
+            <mat-icon>inventory_2</mat-icon>
+            <p>No products yet. Add your first product!</p>
+          </div>
         } @else {
-          <div class="products-table">
+          <div class="products-grid">
             @for (product of products; track getProductId(product)) {
-              <mat-card class="product-row">
-                <img [src]="product.imageUrl" [alt]="product.name">
-                <div class="product-info">
-                  <h4>{{ product.name }}</h4>
-                  <p>{{ getProductCategory(product) }} | {{ product.brand ?? 'N/A' }}</p>
-                </div>
-                <div class="product-price">
-                  <span class="price">₹{{ product.price | number }}</span>
-                  <span class="stock" [class.low]="getProductStock(product) < 10">
-                    {{ getProductStock(product) }} in stock
-                  </span>
-                </div>
-                <div class="product-actions">
+              <div class="product-card">
+                <div class="product-image">
+                  <img [src]="product.imageUrl" [alt]="product.name">
                   @if (product.premiumEarlyAccess) {
-                    <mat-chip color="primary" selected>Premium</mat-chip>
+                    <span class="premium-badge">Premium</span>
                   }
-                  <button mat-icon-button color="warn" (click)="deleteProduct(product)">
-                    <mat-icon>delete</mat-icon>
-                  </button>
                 </div>
-              </mat-card>
+                <div class="product-body">
+                  <h4 class="product-name">{{ product.name }}</h4>
+                  <p class="product-meta">{{ getProductCategory(product) }} <span class="separator">•</span> {{ product.brand ?? 'N/A' }}</p>
+                  <div class="product-footer">
+                    <div class="product-pricing">
+                      <span class="price">₹{{ product.price | number }}</span>
+                      <span class="stock" [class.low]="getProductStock(product) < 10" [class.out]="getProductStock(product) === 0">
+                        @if (getProductStock(product) === 0) {
+                          Out of stock
+                        } @else {
+                          {{ getProductStock(product) }} in stock
+                        }
+                      </span>
+                    </div>
+                    <div class="product-actions">
+                      <button mat-icon-button (click)="editProduct(product); $event.stopPropagation()" matTooltip="Edit">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" (click)="deleteProduct(product); $event.stopPropagation()" matTooltip="Delete">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             }
           </div>
 
@@ -94,7 +115,7 @@
             [length]="productsTotalElements"
             [pageSize]="productsPageSize"
             [pageIndex]="productsPageIndex"
-            [pageSizeOptions]="[5, 10, 25]"
+            [pageSizeOptions]="[8, 12, 24]"
             (page)="onProductsPageChange($event)">
           </mat-paginator>
         }
@@ -121,34 +142,70 @@
           <div class="loading-container">
             <mat-spinner></mat-spinner>
           </div>
+        } @else if (orders.length === 0) {
+          <div class="empty-state">
+            <mat-icon>receipt_long</mat-icon>
+            <p>No orders yet.</p>
+          </div>
         } @else {
-          <div class="orders-table">
+          <div class="orders-list">
             @for (order of orders; track order.id) {
-              <mat-card class="order-row" (click)="viewOrder(order.id)">
-                <div class="order-info">
-                  <span class="order-number">#{{ order.orderNumber }}</span>
-                  <span class="order-date">{{ order.createdAt | date:'short' }}</span>
+              <mat-card class="order-card">
+                <div class="order-header">
+                  <div class="order-info">
+                    <span class="order-number">#{{ order.orderNumber || 'ORD-' + order.id }}</span>
+                    <span class="order-date">{{ order.createdAt | date:'medium' }}</span>
+                  </div>
+                  <div class="order-badges">
+                    @if (order.isPremiumOrder) {
+                      <span class="badge premium">
+                        <mat-icon>star</mat-icon> Premium
+                      </span>
+                    }
+                    <span class="badge status" [class]="getStatusClass(order.status)">
+                      {{ getStatusLabel(order.status) }}
+                    </span>
+                  </div>
                 </div>
-                <div class="order-items">
-                  {{ order.items?.length ?? 0 }} item(s)
-                  @if (order.isPremiumOrder) {
-                    <mat-chip class="premium-chip">
-                      <mat-icon>star</mat-icon>
-                      Premium
-                    </mat-chip>
+
+                <div class="order-body">
+                  <div class="order-detail">
+                    <span class="label">Items</span>
+                    <span class="value">{{ order.itemCount ?? 1 }} item(s)</span>
+                  </div>
+                  <div class="order-detail">
+                    <span class="label">Total</span>
+                    <span class="value price">₹{{ order.total | number }}</span>
+                  </div>
+                </div>
+
+                <div class="order-actions">
+                  @if (order.status === 'PLACED') {
+                    <button mat-raised-button color="primary" (click)="confirmOrder(order)">
+                      <mat-icon>check_circle</mat-icon>
+                      Confirm Order
+                    </button>
+                  } @else if (order.status === 'CONFIRMED') {
+                    <button mat-raised-button color="accent" (click)="markAsShipped(order)">
+                      <mat-icon>local_shipping</mat-icon>
+                      Mark as Shipped
+                    </button>
+                  } @else if (order.status === 'SHIPPED') {
+                    <span class="status-info">
+                      <mat-icon>local_shipping</mat-icon>
+                      In Transit
+                    </span>
+                  } @else if (order.status === 'DELIVERED') {
+                    <span class="status-info delivered">
+                      <mat-icon>check_circle</mat-icon>
+                      Delivered
+                    </span>
+                  } @else if (order.status === 'CANCELLED') {
+                    <span class="status-info cancelled">
+                      <mat-icon>cancel</mat-icon>
+                      Cancelled
+                    </span>
                   }
-                </div>
-                <div class="order-total">
-                  ₹{{ order.total | number }}
-                </div>
-                <div class="order-status" (click)="$event.stopPropagation()">
-                  <mat-form-field appearance="outline">
-                    <mat-select [value]="order.status" (selectionChange)="updateOrderStatus(order, $event.value)">
-                      @for (status of orderStatuses; track status) {
-                        <mat-option [value]="status">{{ status }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
                 </div>
               </mat-card>
             }

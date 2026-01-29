@@ -166,4 +166,10 @@ export class ProfileComponent implements OnInit {
       this.router.navigate(['/products', productId]);
     }
   }
+
+  switchToRecentlyViewedTab(): void {
+    // This would require ViewChild to access the mat-tab-group
+    // For now, just navigate to the profile page with a fragment
+    this.router.navigate(['/profile'], { fragment: 'recently-viewed' });
+  }
 }

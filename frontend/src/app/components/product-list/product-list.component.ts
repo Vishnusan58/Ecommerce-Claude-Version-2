@@ -14,6 +14,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSliderModule } from '@angular/material/slider';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { WishlistService } from '../../services/wishlist.service';
@@ -36,7 +37,8 @@ import { Product, Category, ProductFilter } from '../../models/product.model';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatChipsModule,
-    MatSliderModule
+    MatSliderModule,
+    MatTooltipModule
   ],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css'
@@ -256,5 +258,13 @@ export class ProductListComponent implements OnInit {
 
   getReviewCount(product: Product): number {
     return product.reviewCount ?? 0;
+  }
+
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(price);
   }
 }

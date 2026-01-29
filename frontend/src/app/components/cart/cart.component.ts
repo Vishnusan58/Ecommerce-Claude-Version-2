@@ -13,7 +13,6 @@ import { MatDividerModule } from '@angular/material/divider';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
 import { Cart, CartItem } from '../../models/cart.model';
-import { Product } from '../../models/product.model';
 
 @Component({
   selector: 'app-cart',

@@ -31,4 +31,9 @@ public class ReviewService {
     public List<Review> getProductReviews(Product product) {
         return reviewRepository.findByProduct(product);
     }
+
+    public boolean canUserReview(User user, Product product) {
+        // User can review if they haven't already reviewed this product
+        return !reviewRepository.existsByUserAndProduct(user, product);
+    }
 }

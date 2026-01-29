@@ -75,7 +75,7 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("✅ Seller created: fashion@ecommerce.com / seller123");
         }
 
-        // Customers
+        // Customers (with premium)
         if (!userRepository.existsByEmail("john@example.com")) {
             User customer = new User();
             customer.setName("John Doe");
@@ -83,9 +83,10 @@ public class DataInitializer implements CommandLineRunner {
             customer.setPassword(PasswordUtil.hashPassword("password123"));
             customer.setPhone("9876543213");
             customer.setRole(UserRole.CUSTOMER);
+            customer.setPremiumStatus(true);
             customer.setCreatedAt(LocalDateTime.now());
             userRepository.save(customer);
-            System.out.println("✅ Customer created: john@example.com / password123");
+            System.out.println("✅ Premium Customer created: john@example.com / password123");
         }
 
         if (!userRepository.existsByEmail("jane@example.com")) {
@@ -95,9 +96,24 @@ public class DataInitializer implements CommandLineRunner {
             customer2.setPassword(PasswordUtil.hashPassword("password123"));
             customer2.setPhone("9876543214");
             customer2.setRole(UserRole.CUSTOMER);
+            customer2.setPremiumStatus(true);
             customer2.setCreatedAt(LocalDateTime.now());
             userRepository.save(customer2);
-            System.out.println("✅ Customer created: jane@example.com / password123");
+            System.out.println("✅ Premium Customer created: jane@example.com / password123");
+        }
+
+        // Regular Customer (not premium)
+        if (!userRepository.existsByEmail("alice@example.com")) {
+            User customer3 = new User();
+            customer3.setName("Alice Brown");
+            customer3.setEmail("alice@example.com");
+            customer3.setPassword(PasswordUtil.hashPassword("password123"));
+            customer3.setPhone("9876543215");
+            customer3.setRole(UserRole.CUSTOMER);
+            customer3.setPremiumStatus(false);
+            customer3.setCreatedAt(LocalDateTime.now());
+            userRepository.save(customer3);
+            System.out.println("✅ Customer created: alice@example.com / password123");
         }
     }
 

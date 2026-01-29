@@ -1,5 +1,6 @@
 package com.ecommerce.ecommerce_backend.model;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "coupons")
@@ -9,12 +10,17 @@ public class Coupon {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String code;
-    private String discountType; // PERCENT or FLAT
+    private String discountType; // PERCENTAGE or FIXED
     private double discountValue;
-    private double minOrderAmount;
-    private double maxDiscountAmount;
-    private boolean active;
+    private double minOrderValue;
+    private Double maxDiscount;
+    private LocalDateTime validFrom;
+    private LocalDateTime validUntil;
+    private int usageLimit;
+    private int usedCount = 0;
+    private boolean active = true;
 
     public Coupon() {}
 
@@ -30,11 +36,23 @@ public class Coupon {
     public double getDiscountValue() { return discountValue; }
     public void setDiscountValue(double discountValue) { this.discountValue = discountValue; }
 
-    public double getMinOrderAmount() { return minOrderAmount; }
-    public void setMinOrderAmount(double minOrderAmount) { this.minOrderAmount = minOrderAmount; }
+    public double getMinOrderValue() { return minOrderValue; }
+    public void setMinOrderValue(double minOrderValue) { this.minOrderValue = minOrderValue; }
 
-    public double getMaxDiscountAmount() { return maxDiscountAmount; }
-    public void setMaxDiscountAmount(double maxDiscountAmount) { this.maxDiscountAmount = maxDiscountAmount; }
+    public Double getMaxDiscount() { return maxDiscount; }
+    public void setMaxDiscount(Double maxDiscount) { this.maxDiscount = maxDiscount; }
+
+    public LocalDateTime getValidFrom() { return validFrom; }
+    public void setValidFrom(LocalDateTime validFrom) { this.validFrom = validFrom; }
+
+    public LocalDateTime getValidUntil() { return validUntil; }
+    public void setValidUntil(LocalDateTime validUntil) { this.validUntil = validUntil; }
+
+    public int getUsageLimit() { return usageLimit; }
+    public void setUsageLimit(int usageLimit) { this.usageLimit = usageLimit; }
+
+    public int getUsedCount() { return usedCount; }
+    public void setUsedCount(int usedCount) { this.usedCount = usedCount; }
 
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }

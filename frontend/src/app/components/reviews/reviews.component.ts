@@ -70,11 +70,13 @@ export class ReviewsComponent implements OnInit {
     this.isLoading = true;
     this.reviewService.getReviews(this.productId, this.pageIndex, this.pageSize).subscribe({
       next: (response) => {
-        this.reviews = response.content;
-        this.totalElements = response.totalElements;
+        this.reviews = response?.content || [];
+        this.totalElements = response?.totalElements || 0;
         this.isLoading = false;
       },
       error: () => {
+        this.reviews = [];
+        this.totalElements = 0;
         this.isLoading = false;
       }
     });

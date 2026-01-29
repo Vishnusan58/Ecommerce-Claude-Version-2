@@ -18,7 +18,7 @@
     </div>
   }
 
-  @if (!isLoading && orders.length === 0) {
+  @if (!isLoading && orders?.length === 0) {
     <div class="empty-state">
       <mat-icon>receipt_long</mat-icon>
       <h2>No orders found</h2>
@@ -29,7 +29,7 @@
     </div>
   }
 
-  @if (!isLoading && orders.length > 0) {
+  @if (!isLoading && (orders?.length ?? 0) > 0) {
     <div class="orders-list">
       @for (order of orders; track order.id) {
         <mat-card class="order-card" (click)="viewOrder(order.id)">
@@ -38,24 +38,22 @@
               <span class="order-number">Order #{{ order.orderNumber }}</span>
               <span class="order-date">{{ order.createdAt | date:'mediumDate' }}</span>
             </div>
-            <mat-chip [color]="getStatusColor(order.status)" selected>
+            <mat-chip [color]="getStatusColor(order.status)">
               <mat-icon>{{ getStatusIcon(order.status) }}</mat-icon>
               {{ order.status }}
             </mat-chip>
           </div>
 
           <div class="order-items">
-            @for (item of order.items.slice(0, 3); track item.id) {
-              <img [src]="item.product.imageUrl" [alt]="item.product.name">
-            }
-            @if (order.items.length > 3) {
-              <div class="more-items">+{{ order.items.length - 3 }} more</div>
-            }
+            <!-- Items preview removed for performance - fetch individual order for details -->
+            <div class="order-summary-text">
+              {{ order.items?.length || 0 }} item(s) • ₹{{ order.subtotal | number }} subtotal
+            </div>
           </div>
 
           <div class="order-footer">
             <div class="order-details">
-              <span>{{ order.items.length }} item(s)</span>
+              <span>{{ order.items?.length || 0 }} item(s)</span>
               @if (order.isPremiumOrder) {
                 <span class="premium-badge">
                   <mat-icon>star</mat-icon>

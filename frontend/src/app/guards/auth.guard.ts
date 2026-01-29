@@ -7,9 +7,9 @@ export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
 
   // TODO: TEMPORARY - Remove this line and uncomment the check below when login is fixed
-  return true;
+  // return true;
 
-  /* ORIGINAL AUTH CHECK - Uncomment when login is working
+   // ORIGINAL AUTH CHECK - Uncomment when login is working
   if (authService.isLoggedIn()) {
     return true;
   }
@@ -17,5 +17,5 @@ export const authGuard: CanActivateFn = (route, state) => {
   // Store the attempted URL for redirecting after login
   router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
   return false;
-  */
+  // */
 };

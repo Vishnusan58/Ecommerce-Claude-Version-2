@@ -79,6 +79,40 @@ public class AdminUserService {
         userRepository.save(seller);
     }
 
+    public List<User> getVerifiedSellers() {
+        return userRepository.findByRoleAndSellerVerified(UserRole.SELLER, true);
+    }
 
+    public void deleteSeller(Long sellerId) {
+        User seller = userRepository.findById(sellerId)
+                .orElseThrow(() -> new RuntimeException("Seller not found"));
 
+        if (seller.getRole() != UserRole.SELLER) {
+            throw new RuntimeException("User is not a seller");
+        }
+
+        seller.setRole(UserRole.CUSTOMER);
+        seller.setSellerVerified(false);
+        userRepository.save(seller);
+    }
+
+    public List<User> getPremiumUsers() {
+        return userRepository.findByPremiumStatusTrue();
+    }
+
+    public void grantPremium(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setPremiumStatus(true);
+        userRepository.save(user);
+    }
+
+    public void revokePremium(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setPremiumStatus(false);
+        userRepository.save(user);
+    }
 }

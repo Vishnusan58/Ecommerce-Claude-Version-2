@@ -2,6 +2,7 @@ package com.ecommerce.ecommerce_backend.repository;
 
 import com.ecommerce.ecommerce_backend.model.Product;
 import com.ecommerce.ecommerce_backend.model.Review;
+import com.ecommerce.ecommerce_backend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -9,4 +10,6 @@ import java.util.List;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     List<Review> findByProduct(Product product);
+
+    boolean existsByUserAndProduct(User user, Product product);
 }

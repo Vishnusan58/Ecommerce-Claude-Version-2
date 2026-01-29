@@ -37,4 +37,19 @@ public class AdminCouponService {
         coupon.setActive(false);
         couponRepository.save(coupon);
     }
+
+    public void deleteCoupon(Long couponId) {
+        if (!couponRepository.existsById(couponId)) {
+            throw new RuntimeException("Coupon not found");
+        }
+        couponRepository.deleteById(couponId);
+    }
+
+    public Coupon toggleCouponStatus(Long couponId) {
+        Coupon coupon = couponRepository.findById(couponId)
+                .orElseThrow(() -> new RuntimeException("Coupon not found"));
+
+        coupon.setActive(!coupon.isActive());
+        return couponRepository.save(coupon);
+    }
 }

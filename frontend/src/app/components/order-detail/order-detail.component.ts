@@ -40,9 +40,8 @@ export class OrderDetailComponent implements OnInit {
   isCancelling = false;
 
   statusSteps: { status: OrderStatus; label: string; icon: string }[] = [
-    { status: 'PENDING', label: 'Order Placed', icon: 'receipt' },
+    { status: 'PLACED', label: 'Order Placed', icon: 'receipt' },
     { status: 'CONFIRMED', label: 'Confirmed', icon: 'check_circle' },
-    { status: 'PROCESSING', label: 'Processing', icon: 'inventory_2' },
     { status: 'SHIPPED', label: 'Shipped', icon: 'local_shipping' },
     { status: 'DELIVERED', label: 'Delivered', icon: 'done_all' }
   ];
@@ -90,7 +89,7 @@ export class OrderDetailComponent implements OnInit {
 
   get canCancel(): boolean {
     if (!this.order) return false;
-    return ['PENDING', 'CONFIRMED'].includes(this.order.status);
+    return ['PLACED', 'CONFIRMED'].includes(this.order.status);
   }
 
   get canRequestRefund(): boolean {

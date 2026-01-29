@@ -13,6 +13,7 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { SellerService, SellerStats } from '../../services/seller.service';
 import { Product } from '../../models/product.model';
 import { Order, OrderStatus } from '../../models/order.model';
@@ -35,6 +36,7 @@ import { AddProductComponent } from '../add-product/add-product.component';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatDialogModule,
+    MatTooltipModule,
     AddProductComponent
   ],
   templateUrl: './seller-dashboard.component.html',
@@ -60,8 +62,9 @@ export class SellerDashboardComponent implements OnInit {
   selectedOrderStatus: OrderStatus | '' = '';
 
   showAddProduct = false;
+  productToEdit: Product | null = null;
 
-  orderStatuses: OrderStatus[] = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
+  orderStatuses: OrderStatus[] = ['PLACED', 'CONFIRMED', 'SHIPPED', 'DELIVERED'];
 
   constructor(
     private sellerService: SellerService,
@@ -92,11 +95,13 @@ export class SellerDashboardComponent implements OnInit {
     this.isLoadingProducts = true;
     this.sellerService.getSellerProducts(this.productsPageIndex, this.productsPageSize).subscribe({
       next: (response) => {
-        this.products = response.content;
-        this.productsTotalElements = response.totalElements;
+        this.products = response?.content || [];
+        this.productsTotalElements = response?.totalElements || 0;
         this.isLoadingProducts = false;
       },
       error: () => {
+        this.products = [];
+        this.productsTotalElements = 0;
         this.isLoadingProducts = false;
         this.snackBar.open('Failed to load products', 'Close', { duration: 3000 });
       }
@@ -108,11 +113,13 @@ export class SellerDashboardComponent implements OnInit {
     const status = this.selectedOrderStatus || undefined;
     this.sellerService.getSellerOrders(this.ordersPageIndex, this.ordersPageSize, status).subscribe({
       next: (response) => {
-        this.orders = response.content;
-        this.ordersTotalElements = response.totalElements;
+        this.orders = response?.content || [];
+        this.ordersTotalElements = response?.totalElements || 0;
         this.isLoadingOrders = false;
       },
       error: () => {
+        this.orders = [];
+        this.ordersTotalElements = 0;
         this.isLoadingOrders = false;
         this.snackBar.open('Failed to load orders', 'Close', { duration: 3000 });
       }
@@ -150,13 +157,34 @@ export class SellerDashboardComponent implements OnInit {
 
   toggleAddProduct(): void {
     this.showAddProduct = !this.showAddProduct;
+    if (!this.showAddProduct) {
+      this.productToEdit = null;
+    }
+  }
+
+  editProduct(product: Product): void {
+    this.productToEdit = product;
+    this.showAddProduct = true;
   }
 
   onProductAdded(): void {
     this.showAddProduct = false;
+    this.productToEdit = null;
     this.loadProducts();
     this.loadStats();
     this.snackBar.open('Product added successfully!', 'Close', { duration: 3000 });
+  }
+
+  onProductUpdated(): void {
+    this.showAddProduct = false;
+    this.productToEdit = null;
+    this.loadProducts();
+    this.snackBar.open('Product updated successfully!', 'Close', { duration: 3000 });
+  }
+
+  onEditCancelled(): void {
+    this.showAddProduct = false;
+    this.productToEdit = null;
   }
 
   deleteProduct(product: Product): void {
@@ -177,16 +205,64 @@ export class SellerDashboardComponent implements OnInit {
     }
   }
 
-  updateOrderStatus(order: Order, newStatus: OrderStatus): void {
-    this.sellerService.updateOrderStatus(order.id, newStatus).subscribe({
+  confirmOrder(order: Order): void {
+    if (order.status !== 'PLACED') {
+      this.snackBar.open('Order can only be confirmed when in PLACED status', 'Close', { duration: 3000 });
+      return;
+    }
+
+    this.sellerService.updateOrderStatus(order.id, 'CONFIRMED').subscribe({
       next: () => {
-        order.status = newStatus;
-        this.snackBar.open('Order status updated', 'Close', { duration: 3000 });
+        order.status = 'CONFIRMED';
+        this.loadStats();
+        this.snackBar.open('Order confirmed successfully', 'Close', { duration: 3000 });
+      },
+      error: () => {
+        this.snackBar.open('Failed to confirm order', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  markAsShipped(order: Order): void {
+    if (order.status !== 'CONFIRMED') {
+      this.snackBar.open('Order can only be shipped when in CONFIRMED status', 'Close', { duration: 3000 });
+      return;
+    }
+
+    this.sellerService.updateOrderStatus(order.id, 'SHIPPED').subscribe({
+      next: () => {
+        order.status = 'SHIPPED';
+        this.loadStats();
+        this.snackBar.open('Order marked as shipped', 'Close', { duration: 3000 });
       },
       error: () => {
         this.snackBar.open('Failed to update order status', 'Close', { duration: 3000 });
       }
     });
+  }
+
+  getStatusClass(status: OrderStatus): string {
+    switch (status) {
+      case 'PLACED': return 'placed';
+      case 'CONFIRMED': return 'confirmed';
+      case 'SHIPPED': return 'shipped';
+      case 'DELIVERED': return 'delivered';
+      case 'CANCELLED': return 'cancelled';
+      default: return '';
+    }
+  }
+
+  getStatusLabel(status: OrderStatus): string {
+    switch (status) {
+      case 'PLACED': return 'New Order';
+      case 'CONFIRMED': return 'Confirmed';
+      case 'SHIPPED': return 'Shipped';
+      case 'DELIVERED': return 'Delivered';
+      case 'CANCELLED': return 'Cancelled';
+      case 'RETURN_REQUESTED': return 'Return Requested';
+      case 'REFUNDED': return 'Refunded';
+      default: return status;
+    }
   }
 
   viewOrder(orderId: number | undefined): void {

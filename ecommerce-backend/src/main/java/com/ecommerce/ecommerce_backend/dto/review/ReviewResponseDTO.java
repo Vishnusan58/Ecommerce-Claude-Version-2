@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public class ReviewResponseDTO {
 
+    private Long id;
     private String userName;
     private int rating;
     private String comment;
@@ -11,6 +12,9 @@ public class ReviewResponseDTO {
     private boolean verifiedPurchase;
 
     public ReviewResponseDTO() {}
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getUserName() { return userName; }
     public void setUserName(String userName) { this.userName = userName; }

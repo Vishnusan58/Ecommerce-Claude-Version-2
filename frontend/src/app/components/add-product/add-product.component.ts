@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, OnChanges, SimpleChanges, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -12,7 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { SellerService } from '../../services/seller.service';
 import { ProductService } from '../../services/product.service';
-import { Category } from '../../models/product.model';
+import { Category, Product } from '../../models/product.model';
 
 @Component({
   selector: 'app-add-product',
@@ -33,12 +33,16 @@ import { Category } from '../../models/product.model';
   templateUrl: './add-product.component.html',
   styleUrl: './add-product.component.css'
 })
-export class AddProductComponent implements OnInit {
+export class AddProductComponent implements OnInit, OnChanges {
+  @Input() productToEdit: Product | null = null;
   @Output() productAdded = new EventEmitter<void>();
+  @Output() productUpdated = new EventEmitter<void>();
+  @Output() cancelled = new EventEmitter<void>();
 
   productForm: FormGroup;
   categories: Category[] = [];
   isLoading = false;
+  isEditMode = false;
 
   constructor(
     private fb: FormBuilder,
@@ -61,6 +65,45 @@ export class AddProductComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCategories();
+    this.checkEditMode();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['productToEdit']) {
+      this.checkEditMode();
+    }
+  }
+
+  private checkEditMode(): void {
+    if (this.productToEdit) {
+      this.isEditMode = true;
+      this.populateForm(this.productToEdit);
+    } else {
+      this.isEditMode = false;
+      this.productForm?.reset();
+    }
+  }
+
+  private populateForm(product: Product): void {
+    const categoryId = product.category?.id;
+    this.productForm.patchValue({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      imageUrl: product.imageUrl,
+      categoryId: categoryId,
+      brand: product.brand,
+      stock: product.stock ?? product.stockQuantity ?? 0,
+      premiumEarlyAccess: product.premiumEarlyAccess ?? false
+    });
+  }
+
+  cancel(): void {
+    this.productForm.reset();
+    this.isEditMode = false;
+    this.productToEdit = null;
+    this.cancelled.emit();
   }
 
   loadCategories(): void {
@@ -78,22 +121,41 @@ export class AddProductComponent implements OnInit {
 
     this.isLoading = true;
     const formValue = this.productForm.value;
-
-    this.sellerService.addProduct({
+    const productData = {
       ...formValue,
       originalPrice: formValue.originalPrice || null
-    }).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.productForm.reset();
-        this.productAdded.emit();
-      },
-      error: (error) => {
-        this.isLoading = false;
-        const message = error.error?.message || 'Failed to add product';
-        this.snackBar.open(message, 'Close', { duration: 3000 });
-      }
-    });
+    };
+
+    if (this.isEditMode && this.productToEdit) {
+      const productId = this.productToEdit.id ?? this.productToEdit.productId;
+      this.sellerService.updateProduct(productId!, productData).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.productForm.reset();
+          this.isEditMode = false;
+          this.productToEdit = null;
+          this.productUpdated.emit();
+        },
+        error: (error) => {
+          this.isLoading = false;
+          const message = error.error?.message || 'Failed to update product';
+          this.snackBar.open(message, 'Close', { duration: 3000 });
+        }
+      });
+    } else {
+      this.sellerService.addProduct(productData).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.productForm.reset();
+          this.productAdded.emit();
+        },
+        error: (error) => {
+          this.isLoading = false;
+          const message = error.error?.message || 'Failed to add product';
+          this.snackBar.open(message, 'Close', { duration: 3000 });
+        }
+      });
+    }
   }
 
   getErrorMessage(field: string): string {

@@ -8,6 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { User } from '../../models/user.model';
@@ -25,7 +26,8 @@ import { User } from '../../models/user.model';
     MatMenuModule,
     MatBadgeModule,
     MatSnackBarModule,
-    MatDividerModule
+    MatDividerModule,
+    MatTooltipModule
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
@@ -44,7 +46,8 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
-      if (user) {
+      // Only load cart for regular users (not sellers or admins)
+      if (user && user.role !== 'SELLER' && user.role !== 'ADMIN') {
         this.cartService.getCart().subscribe();
       }
     });

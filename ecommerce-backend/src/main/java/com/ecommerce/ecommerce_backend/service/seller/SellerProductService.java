@@ -49,7 +49,11 @@ public class SellerProductService {
         product.setName(updated.getName());
         product.setDescription(updated.getDescription());
         product.setPrice(updated.getPrice());
+        product.setOriginalPrice(updated.getOriginalPrice());
         product.setStockQuantity(updated.getStockQuantity());
+        product.setImageUrl(updated.getImageUrl());
+        product.setBrand(updated.getBrand());
+        product.setPremiumEarlyAccess(updated.getPremiumEarlyAccess());
 
         return productRepository.save(product);
     }
@@ -64,8 +68,8 @@ public class SellerProductService {
             throw new RuntimeException("Unauthorized product access");
         }
 
-        product.setStockQuantity(0);
-        productRepository.save(product);
+        // Actually delete the product
+        productRepository.delete(product);
     }
 
     public List<Product> getSellerProducts(User seller) {

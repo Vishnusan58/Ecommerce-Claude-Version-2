@@ -26,6 +26,7 @@ public class User {
 
     private LocalDateTime createdAt;
     private boolean sellerVerified;
+    private boolean premiumStatus;
 
     public boolean isSellerVerified() {
         return sellerVerified;
@@ -33,6 +34,14 @@ public class User {
 
     public void setSellerVerified(boolean sellerVerified) {
         this.sellerVerified = sellerVerified;
+    }
+
+    public boolean isPremiumStatus() {
+        return premiumStatus;
+    }
+
+    public void setPremiumStatus(boolean premiumStatus) {
+        this.premiumStatus = premiumStatus;
     }
 
     public User() {}

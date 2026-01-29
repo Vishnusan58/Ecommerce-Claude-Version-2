@@ -15,11 +15,13 @@ public class Product {
     private String description;
     private String brand;
     private double price;
+    private Double originalPrice;
     private int stockQuantity;
     private double averageRating;
     private LocalDateTime createdAt;
     private double discountPercent;
     private String imageUrl;
+    private Boolean premiumEarlyAccess;
 
     public double getDiscountPercent() {
         return discountPercent;
@@ -60,6 +62,9 @@ public class Product {
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
 
+    public Double getOriginalPrice() { return originalPrice; }
+    public void setOriginalPrice(Double originalPrice) { this.originalPrice = originalPrice; }
+
     public int getStockQuantity() { return stockQuantity; }
     public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
 
@@ -74,4 +79,7 @@ public class Product {
 
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+
+    public Boolean getPremiumEarlyAccess() { return premiumEarlyAccess; }
+    public void setPremiumEarlyAccess(Boolean premiumEarlyAccess) { this.premiumEarlyAccess = premiumEarlyAccess; }
 }

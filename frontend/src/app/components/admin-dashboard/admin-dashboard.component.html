@@ -80,37 +80,54 @@
           <div class="loading-container">
             <mat-spinner></mat-spinner>
           </div>
+        } @else if (users.length === 0) {
+          <div class="empty-state-small">
+            <mat-icon>people_outline</mat-icon>
+            <p>No users found</p>
+          </div>
         } @else {
-          <div class="users-table">
+          <div class="users-grid">
             @for (user of users; track user.id) {
-              <mat-card class="user-row">
-                <div class="user-info">
-                  <div class="avatar">{{ user.name.charAt(0).toUpperCase() }}</div>
-                  <div>
-                    <strong>{{ user.name }}</strong>
-                    <span class="email">{{ user.email }}</span>
+              <mat-card class="user-card">
+                <div class="user-card-header">
+                  <div class="avatar" [class.premium-avatar]="user.premiumStatus">
+                    {{ user.name?.charAt(0)?.toUpperCase() || '?' }}
+                  </div>
+                  @if (user.premiumStatus) {
+                    <mat-icon class="premium-badge-icon">star</mat-icon>
+                  }
+                </div>
+                <div class="user-card-body">
+                  <h4 class="user-name">{{ user.name || 'Unknown' }}</h4>
+                  <p class="user-email">{{ user.email }}</p>
+                  <div class="user-meta">
+                    <span class="role-chip" [class]="'role-' + user.role?.toLowerCase()">
+                      {{ user.role }}
+                    </span>
+                    @if (user.premiumStatus) {
+                      <span class="premium-chip">Premium</span>
+                    }
                   </div>
                 </div>
-                <div class="user-role">
-                  <mat-form-field appearance="outline">
+                <div class="user-card-actions">
+                  <mat-form-field appearance="outline" class="role-select">
+                    <mat-label>Role</mat-label>
                     <mat-select [value]="user.role" (selectionChange)="changeUserRole(user, $event.value)">
                       @for (role of roles; track role) {
                         <mat-option [value]="role">{{ role }}</mat-option>
                       }
                     </mat-select>
                   </mat-form-field>
-                </div>
-                <div class="user-premium">
                   @if (user.premiumStatus) {
-                    <mat-chip color="primary" selected>
-                      <mat-icon>star</mat-icon>
-                      Premium
-                    </mat-chip>
-                    <button mat-icon-button color="warn" (click)="cancelUserPremium(user)" matTooltip="Cancel Premium">
+                    <button mat-stroked-button color="warn" (click)="cancelUserPremium(user)" class="revoke-btn">
                       <mat-icon>cancel</mat-icon>
+                      Revoke
                     </button>
                   } @else {
-                    <span class="no-premium">Not Premium</span>
+                    <button mat-stroked-button color="primary" (click)="grantPremium(user)" class="grant-btn">
+                      <mat-icon>star</mat-icon>
+                      Grant Premium
+                    </button>
                   }
                 </div>
               </mat-card>
@@ -121,7 +138,7 @@
             [length]="usersTotalElements"
             [pageSize]="usersPageSize"
             [pageIndex]="usersPageIndex"
-            [pageSizeOptions]="[5, 10, 25]"
+            [pageSizeOptions]="[8, 16, 24]"
             (page)="onUsersPageChange($event)">
           </mat-paginator>
         }
@@ -329,6 +346,168 @@
                 <button mat-icon-button color="warn" (click)="deleteCategory(category)">
                   <mat-icon>delete</mat-icon>
                 </button>
+              </mat-card>
+            }
+          </div>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- Verified Sellers Tab -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        Sellers
+        @if (verifiedSellers.length > 0) {
+          <mat-chip class="tab-badge">{{ verifiedSellers.length }}</mat-chip>
+        }
+      </ng-template>
+      <div class="tab-content">
+        <h2>Verified Sellers</h2>
+
+        @if (isLoadingVerifiedSellers) {
+          <div class="loading-container">
+            <mat-spinner></mat-spinner>
+          </div>
+        } @else if (verifiedSellers.length === 0) {
+          <div class="empty-state-small">
+            <mat-icon>store</mat-icon>
+            <p>No verified sellers yet</p>
+          </div>
+        } @else {
+          <div class="sellers-grid">
+            @for (seller of verifiedSellers; track seller.id) {
+              <mat-card class="seller-card-full">
+                <div class="seller-header">
+                  <div class="avatar large">{{ seller.name.charAt(0).toUpperCase() }}</div>
+                  <div class="seller-details">
+                    <strong>{{ seller.name }}</strong>
+                    <span class="email">{{ seller.email }}</span>
+                  </div>
+                </div>
+                <div class="seller-meta">
+                  <span class="badge seller-badge">
+                    <mat-icon>verified</mat-icon>
+                    Verified Seller
+                  </span>
+                  @if (seller.premiumStatus) {
+                    <span class="badge premium-badge">
+                      <mat-icon>star</mat-icon>
+                      Premium
+                    </span>
+                  }
+                </div>
+                <div class="seller-card-actions">
+                  <button mat-stroked-button color="warn" (click)="deleteSeller(seller)">
+                    <mat-icon>person_remove</mat-icon>
+                    Remove Seller
+                  </button>
+                </div>
+              </mat-card>
+            }
+          </div>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- Products Tab -->
+    <mat-tab label="Products">
+      <div class="tab-content">
+        <div class="tab-header">
+          <h2>All Products ({{ productsTotalElements }})</h2>
+        </div>
+
+        @if (isLoadingProducts) {
+          <div class="loading-container">
+            <mat-spinner></mat-spinner>
+          </div>
+        } @else if (products.length === 0) {
+          <div class="empty-state-small">
+            <mat-icon>inventory_2</mat-icon>
+            <p>No products found</p>
+          </div>
+        } @else {
+          <div class="products-grid">
+            @for (product of products; track getProductId(product)) {
+              <mat-card class="product-card">
+                <div class="product-image">
+                  @if (product.imageUrl) {
+                    <img [src]="product.imageUrl" [alt]="product.name">
+                  } @else {
+                    <mat-icon class="placeholder-icon">image</mat-icon>
+                  }
+                </div>
+                <div class="product-info">
+                  <h4>{{ product.name }}</h4>
+                  <p class="product-category">{{ product.category?.name || 'Uncategorized' }}</p>
+                  <div class="product-price">
+                    <span class="price">₹{{ product.price | number }}</span>
+                    @if (product.originalPrice && product.originalPrice > product.price) {
+                      <span class="original-price">₹{{ product.originalPrice | number }}</span>
+                    }
+                  </div>
+                  <p class="product-stock">Stock: {{ getProductStock(product) }}</p>
+                </div>
+                <div class="product-actions">
+                  <button mat-icon-button color="warn" (click)="deleteProduct(product)" matTooltip="Delete Product">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </mat-card>
+            }
+          </div>
+
+          <mat-paginator
+            [length]="productsTotalElements"
+            [pageSize]="productsPageSize"
+            [pageIndex]="productsPageIndex"
+            [pageSizeOptions]="[6, 12, 24]"
+            (page)="onProductsPageChange($event)">
+          </mat-paginator>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- Premium Users Tab -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        Premium Users
+        @if (premiumUsers.length > 0) {
+          <mat-chip class="tab-badge premium">{{ premiumUsers.length }}</mat-chip>
+        }
+      </ng-template>
+      <div class="tab-content">
+        <h2>Premium Users</h2>
+
+        @if (isLoadingPremiumUsers) {
+          <div class="loading-container">
+            <mat-spinner></mat-spinner>
+          </div>
+        } @else if (premiumUsers.length === 0) {
+          <div class="empty-state-small">
+            <mat-icon>star_border</mat-icon>
+            <p>No premium users yet</p>
+          </div>
+        } @else {
+          <div class="premium-users-grid">
+            @for (user of premiumUsers; track user.id) {
+              <mat-card class="premium-user-card">
+                <div class="premium-user-header">
+                  <div class="avatar premium-avatar">{{ user.name.charAt(0).toUpperCase() }}</div>
+                  <div class="premium-user-info">
+                    <strong>{{ user.name }}</strong>
+                    <span class="email">{{ user.email }}</span>
+                  </div>
+                  <mat-icon class="premium-star">star</mat-icon>
+                </div>
+                <div class="premium-user-meta">
+                  <span class="role-badge">{{ user.role }}</span>
+                </div>
+                <div class="premium-user-actions">
+                  <button mat-stroked-button color="warn" (click)="cancelUserPremium(user)">
+                    <mat-icon>cancel</mat-icon>
+                    Revoke Premium
+                  </button>
+                </div>
               </mat-card>
             }
           </div>

@@ -46,6 +46,40 @@
             </button>
           </div>
         }
+
+        <!-- Recently Viewed Section -->
+        @if (recentlyViewed.length > 0) {
+          <div class="recently-viewed-section">
+            <h3>Recently Viewed</h3>
+            <div class="recently-viewed-preview">
+              @for (product of recentlyViewed.slice(0, 4); track getProductId(product)) {
+                <div class="recently-viewed-item" (click)="viewProduct(getProductId(product))">
+                  <img [src]="product.imageUrl" [alt]="product.name">
+                  <span class="item-name">{{ product.name }}</span>
+                </div>
+              }
+              @if (recentlyViewed.length > 4) {
+                <div class="view-more" (click)="switchToRecentlyViewedTab()">
+                  <mat-icon>add</mat-icon>
+                  <span>View {{ recentlyViewed.length - 4 }} more</span>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="recently-viewed-section">
+            <div class="empty-recently-viewed">
+              <mat-icon>visibility</mat-icon>
+              <div>
+                <strong>Start browsing to see recently viewed items</strong>
+                <p>Products you view will appear here for quick access</p>
+                <button mat-stroked-button routerLink="/products" style="margin-top: 8px;">
+                  Browse Products
+                </button>
+              </div>
+            </div>
+          </div>
+        }
       </mat-card>
 
       <!-- Tabs -->
@@ -117,6 +151,10 @@
               <div class="empty-state-small">
                 <mat-icon>history</mat-icon>
                 <p>No recently viewed products</p>
+                <p style="font-size: 0.8rem; color: #999;">Browse our products to see them here!</p>
+                <button mat-stroked-button routerLink="/products" style="margin-top: 12px;">
+                  Browse Products
+                </button>
               </div>
             } @else {
               <div class="recently-viewed-grid">

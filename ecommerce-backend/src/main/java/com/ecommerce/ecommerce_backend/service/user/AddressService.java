@@ -21,6 +21,11 @@ public class AddressService {
         return addressRepository.save(address);
     }
 
+    // Used by OrderController for inline addresses
+    public UserAddress saveAddress(UserAddress address) {
+        return addressRepository.save(address);
+    }
+
     public List<UserAddress> getAddresses(User user) {
         return addressRepository.findByUser(user);
     }
@@ -33,11 +38,15 @@ public class AddressService {
             throw new RuntimeException("Unauthorized access");
         }
 
+        address.setFullName(updated.getFullName());
+        address.setPhone(updated.getPhone());
         address.setAddressLine1(updated.getAddressLine1());
         address.setAddressLine2(updated.getAddressLine2());
         address.setCity(updated.getCity());
         address.setState(updated.getState());
         address.setPincode(updated.getPincode());
+        address.setCountry(updated.getCountry());
+        address.setDefault(updated.isDefault());
 
         return addressRepository.save(address);
     }

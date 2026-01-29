@@ -17,18 +17,22 @@ public class CouponCalculatorUtil {
             return 0;
         }
 
-        if (orderAmount < coupon.getMinOrderAmount()) {
+        if (orderAmount < coupon.getMinOrderValue()) {
             return 0;
         }
 
         double discount;
 
-        if ("PERCENT".equalsIgnoreCase(coupon.getDiscountType())) {
+        if ("PERCENTAGE".equalsIgnoreCase(coupon.getDiscountType())) {
             discount = (orderAmount * coupon.getDiscountValue()) / 100;
         } else {
             discount = coupon.getDiscountValue();
         }
 
-        return Math.min(discount, coupon.getMaxDiscountAmount());
+        Double maxDiscount = coupon.getMaxDiscount();
+        if (maxDiscount != null && maxDiscount > 0) {
+            return Math.min(discount, maxDiscount);
+        }
+        return discount;
     }
 }

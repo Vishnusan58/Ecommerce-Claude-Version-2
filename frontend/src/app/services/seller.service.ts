@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Product, PageResponse } from '../models/product.model';
 import { Order, OrderStatus } from '../models/order.model';
 
@@ -34,15 +35,32 @@ export class SellerService {
   constructor(private http: HttpClient) {}
 
   getSellerStats(): Observable<SellerStats> {
-    return this.http.get<SellerStats>(`${this.API_URL}/dashboard`);
+    return this.http.get<SellerStats>(`${this.API_URL}/dashboard`).pipe(
+      catchError(() => of({
+        totalRevenue: 0,
+        totalOrders: 0,
+        totalProducts: 0,
+        pendingOrders: 0
+      }))
+    );
   }
 
   getSellerProducts(page: number = 0, size: number = 10): Observable<PageResponse<Product>> {
     const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
+      .set('page', String(page || 0))
+      .set('size', String(size || 10));
 
-    return this.http.get<PageResponse<Product>>(`${this.API_URL}/products`, { params });
+    return this.http.get<PageResponse<Product>>(`${this.API_URL}/products`, { params }).pipe(
+      catchError(() => of({
+        content: [],
+        totalElements: 0,
+        totalPages: 0,
+        size: size || 10,
+        number: page || 0,
+        first: true,
+        last: true
+      }))
+    );
   }
 
   addProduct(productData: CreateProductRequest): Observable<Product> {
@@ -59,14 +77,24 @@ export class SellerService {
 
   getSellerOrders(page: number = 0, size: number = 10, status?: OrderStatus): Observable<PageResponse<Order>> {
     let params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
+      .set('page', String(page || 0))
+      .set('size', String(size || 10));
 
     if (status) {
       params = params.set('status', status);
     }
 
-    return this.http.get<PageResponse<Order>>(`${this.API_URL}/orders`, { params });
+    return this.http.get<PageResponse<Order>>(`${this.API_URL}/orders`, { params }).pipe(
+      catchError(() => of({
+        content: [],
+        totalElements: 0,
+        totalPages: 0,
+        size: size || 10,
+        number: page || 0,
+        first: true,
+        last: true
+      }))
+    );
   }
 
   updateOrderStatus(orderId: number, status: OrderStatus): Observable<Order> {
